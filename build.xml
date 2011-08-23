@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="Shift_JIS"?>
+
+<!-- ////////////////////////////////////////////////////////////////////// -->
+<!-- Copyright (c) 2003 by Naohide Sano, All rights reserved.               -->
+<!--                                                                        -->
+<!-- Written by Naohide Sano                                                -->
+<!--                                                                        -->
+<!-- em88                                                                   -->
+<!--                                                                        -->
+<!-- @author	Naohide Sano                                                -->
+<!-- @version	0.00	031228	nsano	initial version                     -->
+<!--                                                                        -->
+<!-- ////////////////////////////////////////////////////////////////////// -->
+
+<project default="run" basedir=".">
+
+  <!-- クラスパスの定義 -->
+  <path id="project.class.path">
+    <pathelement location="src" />
+    <pathelement location="." />
+    <pathelement location="../.." />
+    <fileset dir="lib">
+      <include name="*.jar" />
+    </fileset>
+  </path>
+
+  <!-- ターゲットの定義 -->
+
+  <!-- clean -->
+  <target name="clean" description="ビルド環境のクリア">
+    <delete>
+      <fileset dir=".">
+        <include name="**/*.class" />
+      </fileset>
+    </delete>
+  </target>
+
+  <!-- native2ascii -->
+  <target name="resource" depends="" description="コンパイル">
+    <native2ascii encoding="Windows-31J" ext="" src="src" dest="src">
+      <include name="**/*.properties.sjis" />
+    </native2ascii>
+  </target>
+
+  <!-- javac -->
+  <target name="compile" depends="resource" description="コンパイル">
+    <javac debug="on" deprecation="on">
+      <classpath refid="project.class.path" />
+      <include name="**/*.java" />
+      <src path="src" />
+    </javac>
+  </target>
+
+  <!-- run -->
+  <target name="run" depends="compile" description="Run program">
+    <java classname="vavi.apps.em88.Emu88" fork="yes">
+      <classpath refid="project.class.path" />
+<!--
+      <arg line="-1 3c" />
+      <arg line="-2 86" />
+-->
+    </java>
+  </target>
+
+  <!-- debug -->
+  <!--
+      java -cp ../..\;.\;`classpath lib/*.jar` Emu88 -d
+    -->
+
+  <!-- t1 -->
+  <target name="t1" depends="compile" description="Run program">
+    <java classname="vavi.apps.em88.Z80" fork="yes">
+      <classpath refid="project.class.path" />
+    </java>
+  </target>
+
+  <!-- dsa -->
+  <target name="dsa" depends="compile" description="Run program">
+    <java classname="vavi.apps.em88.Disassembler" fork="yes">
+      <classpath refid="project.class.path" />
+      <arg line="roms/romn88.bin" />
+      <arg line="0" />
+      <arg line="8000" />
+    </java>
+  </target>
+
+</project>
+
+<!-- -->
