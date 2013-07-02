@@ -342,7 +342,7 @@ public class Z80 implements Device {
 
     // -------------------------------------------------------------------------
 
-    /** ��PD82xx */
+    /** 鐃緒申PD82xx */
     private INTC intc;
 
     /** bus emulation */
@@ -3538,7 +3538,7 @@ Debug.println("halt: " + StringUtil.toHex4(pc - 1));
     /**
      * dd cb b xx
      * <p>
-     * �Ō�� pc += 2 ����̂� fetch �p���Ȃ� (�ȉ����l)
+     * 鐃重� pc += 2 ����̂� fetch �p���Ȃ� (�ȉ����l)
      * </p>
      */
     private final void exec_ddcb() {

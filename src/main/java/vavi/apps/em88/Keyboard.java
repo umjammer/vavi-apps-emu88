@@ -15,15 +15,15 @@ import vavi.util.Debug;
 
 
 /**
- * PC-8801 ‚ÌƒL[ƒ{[ƒh‚ğƒGƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚µ‚Ü‚·D
+ * PC-8801 ã®ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‚’ã‚¨ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã—ã¾ã™ï¼
  * 
- * TODO O‚Â‰Ÿ‚³‚ê‚½‚çl‚Â–Ú‚ª”½‰‚·‚éŒ
+ * TODO ä¸‰ã¤æŠ¼ã•ã‚ŒãŸã‚‰å››ã¤ç›®ãŒåå¿œã™ã‚‹ä»¶
  * <pre>
  * 
  *  -X--X-
  *   |  |
  *  -O--X-
- *   ª ‚±‚±
+ *   â†‘ ã“ã“
  * </pre>
  * 
  * @author <a href=mailto:vavivavi@yahoo.co.jp>Naohide Sano</a> (nsano)
@@ -46,7 +46,7 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
     /** key port 0x00 ~ 0x0b */
     private int[] keyPort = new int[12];
 
-    /** w’è‚µ‚½ƒ|[ƒg‚Ì’l‚ğæ“¾‚µ‚Ü‚·D */
+    /** æŒ‡å®šã—ãŸãƒãƒ¼ãƒˆã®å€¤ã‚’å–å¾—ã—ã¾ã™ï¼ */
     public int getPort(int port) {
         return keyPort[port];
     }

@@ -88,13 +88,13 @@ class INTC implements Device {
             return;
         }
 
-        if (sgs_) { // —Dæ‡ˆÊ‚Ì‚İ‚É‚æ‚éŠ„‚è‚İ”­¶
+        if (sgs_) { // å„ªå…ˆé †ä½ã®ã¿ã«ã‚ˆã‚‹å‰²ã‚Šè¾¼ã¿ç™ºç”Ÿ
             for (int i = 0; i < channel; i++) {
                 if ((irff & (0x01 << i)) == 0) {
                     return;
                 }
             }
-        } else { // ƒCƒ“ƒ^ƒ‰ƒvƒgƒŒƒxƒ‹‚Æ”äŠr‚µŠ„‚è‚İ”­¶
+        } else { // ã‚¤ãƒ³ã‚¿ãƒ©ãƒ—ãƒˆãƒ¬ãƒ™ãƒ«ã¨æ¯”è¼ƒã—å‰²ã‚Šè¾¼ã¿ç™ºç”Ÿ
             if (channel > level) {
                 return;
             }

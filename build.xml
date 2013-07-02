@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Shift_JIS"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ////////////////////////////////////////////////////////////////////// -->
 <!-- Copyright (c) 2003 by Naohide Sano, All rights reserved.               -->
@@ -14,7 +14,7 @@
 
 <project default="run" basedir=".">
 
-  <!-- ƒNƒ‰ƒXƒpƒX‚Ì’è‹` -->
+  <!-- ã‚¯ãƒ©ã‚¹ãƒ‘ã‚¹ã®å®šç¾© -->
   <path id="project.class.path">
     <pathelement location="src" />
     <pathelement location="." />
@@ -24,10 +24,10 @@
     </fileset>
   </path>
 
-  <!-- ƒ^[ƒQƒbƒg‚Ì’è‹` -->
+  <!-- ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®å®šç¾© -->
 
   <!-- clean -->
-  <target name="clean" description="ƒrƒ‹ƒhŠÂ‹«‚ÌƒNƒŠƒA">
+  <target name="clean" description="ãƒ“ãƒ«ãƒ‰ç’°å¢ƒã®ã‚¯ãƒªã‚¢">
     <delete>
       <fileset dir=".">
         <include name="**/*.class" />
@@ -36,14 +36,14 @@
   </target>
 
   <!-- native2ascii -->
-  <target name="resource" depends="" description="ƒRƒ“ƒpƒCƒ‹">
+  <target name="resource" depends="" description="ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«">
     <native2ascii encoding="Windows-31J" ext="" src="src" dest="src">
       <include name="**/*.properties.sjis" />
     </native2ascii>
   </target>
 
   <!-- javac -->
-  <target name="compile" depends="resource" description="ƒRƒ“ƒpƒCƒ‹">
+  <target name="compile" depends="resource" description="ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«">
     <javac debug="on" deprecation="on">
       <classpath refid="project.class.path" />
       <include name="**/*.java" />

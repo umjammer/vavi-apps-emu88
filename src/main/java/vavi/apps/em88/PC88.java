@@ -13,7 +13,7 @@ import vavi.util.StringUtil;
 /**
  * PC-8801 mk2 emulator.
  * <p>
- * TODO �������� {@link Device} ��
+ * TODO TODO メモリの {@link Device} 化
  * </p>
  * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
  * @version 0.00 931205 nsano first version <br>
@@ -118,10 +118,10 @@ Debug.println("sw2: " + StringUtil.toHex2(sw2));
      * @before {@link #setView(View)}
      */
     public void exec(int address) {
-        // TODO ���܂���
+        // TODO いまいち
         Graphic graphic = (Graphic) mainBus.getDevice(Graphic.class.getName());
         graphic.setView(view);
-        // TODO ���܂���
+        // TODO いまいち
         Keyboard keyboard = (Keyboard) mainBus.getDevice(Keyboard.class.getName());
         view.setController(keyboard);
 
@@ -149,7 +149,7 @@ Debug.println("sw2: " + StringUtil.toHex2(sw2));
 
     /**
      * dip switch 1
-     * �ȉ��� ON/OFF �Ńr�b�g��쐬�����]���Đݒ肷��B
+     * 以下の ON/OFF でビットを作成し反転して設定する。
      * <pre>
      * SW1                      ON                 OFF
      *
@@ -173,7 +173,7 @@ Debug.println("sw2: " + StringUtil.toHex2(sw2));
 
     /**
      * dip switch 2
-     * �ȉ��� ON/OFF �Ńr�b�g��쐬�����]���Đݒ肷��B
+     * 以下の ON/OFF でビットを作成し反転して設定する。
      * <pre>
      * SW2                      ON              OFF
      *
@@ -302,7 +302,7 @@ Debug.println("sw2: " + StringUtil.toHex2(sw2));
                 if (direction == Direction.WRITE || mmode == RAM) {
                     mapping.base = RAM_64K;
                 } else {
-//                  if ((~romkill & 0xfe) != 0) {       // TODO ROM1 �����UʁH
+//                  if ((~romkill & 0xfe) != 0) {       // TODO ROM1 だけ特別？
 //                      address.base = null;
 //  Debug.println("4throm: " + rom4th + ", illegal access: " + StringUtil.toHex4(a));
 //                  } else {

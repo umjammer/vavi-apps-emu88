@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public abstract class Bus {
 
-    /** ����󋵂Ŏ��ۂǂ̃������Ƀ}�b�s���O����Ă��邩�������N���X�ł��B */
+    /** ある状況で実際どのメモリにマッピングされているかを現すクラスです。 */
     public final class Mapping {
         /** */
         public byte[] base;
@@ -29,15 +29,15 @@ public abstract class Bus {
         public int pointer;
     }
 
-    /** �������̓ǂݏ����̕�����\���񋓂ł��B */
+    /** メモリの読み書きの方向を表す列挙です。 */
     public enum Direction {
         READ,
         WRITE
     }
 
     /**
-     * @param address 16bit �̃A�h���X
-     * @param direction {@link Direction} �� {@link Mapping} ���ς��ꍇ������
+     * @param address 16bit のアドレス
+     * @param direction {@link Direction} で {@link Mapping} が変わる場合がある
      */
     protected abstract Mapping getMapping(int address, Direction direction);
 
@@ -66,6 +66,13 @@ public abstract class Bus {
     public final void pokew(int address, int value) {
         pokeb(address, value);
         pokeb(address + 1, value >> 8);
+// Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
+    }
+
+    /** */
+    public final void pokew(int address, int h, int l) {
+        pokeb(address, h);
+        pokeb(address + 1, l);
 // Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
     }
 

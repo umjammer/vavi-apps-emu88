@@ -96,7 +96,7 @@ class Emu88 {
     }
 
     /**
-     * �µ������ Graphics ���̂�̂���H�H�H
+     *  Graphics 
      */
     static class SwingView implements View {
         /** */
@@ -152,7 +152,7 @@ class Emu88 {
             }
         }
 
-        /* TODO �킩��Â炢 */
+        /* TODO  */
         public void reset() {
             screen = new JPanel() {
                 public void paint(Graphics g) {
@@ -213,7 +213,7 @@ class Emu88 {
         public void read(String filename, byte[] buf, int length) {
             try {
     
-                InputStream is = new FileInputStream(filename);
+                InputStream is = Emu88.class.getResourceAsStream(filename);
                 int l = 0;
                 while (l < length) {
                     int r = is.read(buf, l, length - l);

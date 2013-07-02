@@ -273,7 +273,7 @@ if (currentMnemonic == null) {
             Class<?> clazz = Debugger.class;
 
             // instructions
-            final String path1 = "disassembler.properties";
+            final String path1 = "/disassembler.properties";
             Properties props = new Properties();
             props.load(clazz.getResourceAsStream(path1));
 
@@ -291,17 +291,17 @@ if (currentMnemonic == null) {
             }
 
             // names
-            final String path2 = "address.properties";
+            final String path2 = "/address.properties";
             names.load(clazz.getResourceAsStream(path2));
 
-            final String path3 = "inport.properties";
+            final String path3 = "/inport.properties";
             inportNames.load(clazz.getResourceAsStream(path3));
 
-            final String path4 = "outport.properties";
+            final String path4 = "/outport.properties";
             outportNames.load(clazz.getResourceAsStream(path4));
         } catch (Exception e) {
 Debug.printStackTrace(e);
-            System.exit(1);
+            throw new IllegalStateException(e);
         }
     }
 
