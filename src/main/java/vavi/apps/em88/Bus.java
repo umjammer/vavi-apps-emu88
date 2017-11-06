@@ -85,7 +85,7 @@ public abstract class Bus {
     // ----
 
     /** */
-    private final Map<String, Device> devices = new HashMap<String, Device>();
+    private final Map<String, Device> devices = new HashMap<>();
 
     /** */
     public void addDevice(Device device) {

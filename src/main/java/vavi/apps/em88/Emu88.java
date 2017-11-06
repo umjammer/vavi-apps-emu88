@@ -148,7 +148,7 @@ class Emu88 {
                     }
                 }
             } catch (IOException e) {
-                throw (RuntimeException) new IllegalStateException().initCause(e);
+                throw new IllegalStateException(e);
             }
         }
 
@@ -226,7 +226,7 @@ System.err.println("Illegal EOF: " + l + "/" + length);
                 is.close();
 
             } catch (IOException e) {
-                throw (RuntimeException) new IllegalStateException().initCause(e);
+                throw new IllegalStateException(e);
             }
         }
     }

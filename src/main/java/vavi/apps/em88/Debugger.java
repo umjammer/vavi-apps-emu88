@@ -203,6 +203,8 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
 //System.out.println("address " + StringUtil.toHex4(address) + "=" + StringUtil.toHex2(k));
             bus.pokeb(p, c);
         }
+        
+        fp.close();
 //System.out.println("read file " + filename + " address " + StringUtil.toHex4(address) + ", " + (p - address) + " bytes");
     }
     

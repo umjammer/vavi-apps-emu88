@@ -7,55 +7,52 @@
 <!--                                                                        -->
 <!-- em88                                                                   -->
 <!--                                                                        -->
-<!-- @author	Naohide Sano                                                -->
-<!-- @version	0.00	031228	nsano	initial version                     -->
+<!-- @author Naohide Sano                                                   -->
+<!-- @version 0.00 031228 nsano initial version                             -->
 <!--                                                                        -->
 <!-- ////////////////////////////////////////////////////////////////////// -->
 
-<project default="run" basedir=".">
+<project name="vavi-apps-em88" default="run" basedir="."
+  xmlns:artifact="urn:maven-artifact-ant">
 
-  <!-- クラスパスの定義 -->
-  <path id="project.class.path">
-    <pathelement location="src" />
-    <pathelement location="." />
-    <pathelement location="../.." />
-    <fileset dir="lib">
+  <path id="maven-ant-tasks.classpath">
+    <fileset dir="${user.home}/lib/java/maven-ant-tasks">
       <include name="*.jar" />
     </fileset>
   </path>
+  <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+           uri="urn:maven-artifact-ant"
+           classpathref="maven-ant-tasks.classpath" />
 
-  <!-- ターゲットの定義 -->
+  <property file="local.properties" />
 
-  <!-- clean -->
-  <target name="clean" description="ビルド環境のクリア">
-    <delete>
-      <fileset dir=".">
-        <include name="**/*.class" />
-      </fileset>
-    </delete>
-  </target>
+  <xmlproperty file="pom.xml" />
 
-  <!-- native2ascii -->
-  <target name="resource" depends="" description="コンパイル">
-    <native2ascii encoding="Windows-31J" ext="" src="src" dest="src">
-      <include name="**/*.properties.sjis" />
-    </native2ascii>
-  </target>
+  <!-- Path Definitions -->
+  <path id="project.class.path">
+    <pathelement location="${javac.dest.test}" />
+    <pathelement location="${javac.dest}" />
+    <fileset refid="maven-ant-tasks.dependency.fileset" />
+  </path>
 
-  <!-- javac -->
-  <target name="compile" depends="resource" description="コンパイル">
-    <javac debug="on" deprecation="on">
-      <classpath refid="project.class.path" />
-      <include name="**/*.java" />
-      <src path="src" />
-    </javac>
+  <!-- prepare -->
+  <target name="prepare" description="Preparing">
+    <artifact:pom file="pom.xml" id="maven.project" />
+    <artifact:dependencies fileSetId="maven-ant-tasks.dependency.fileset">
+      <pom refid="maven.project" />
+    </artifact:dependencies>
+    <artifact:mvn pom="pom.xml">
+      <arg value="clean" />
+      <arg value="package" />
+      <arg value="-Dmaven.test.skip=true"/>
+    </artifact:mvn>
   </target>
 
   <!-- run -->
-  <target name="run" depends="compile" description="Run program">
+  <target name="run" depends="prepare" description="Run program">
     <java classname="vavi.apps.em88.Emu88" fork="yes">
       <classpath refid="project.class.path" />
-<!--
+      <!--
       <arg line="-1 3c" />
       <arg line="-2 86" />
 -->
@@ -68,14 +65,14 @@
     -->
 
   <!-- t1 -->
-  <target name="t1" depends="compile" description="Run program">
+  <target name="t1" depends="prepare" description="Run program">
     <java classname="vavi.apps.em88.Z80" fork="yes">
       <classpath refid="project.class.path" />
     </java>
   </target>
 
   <!-- dsa -->
-  <target name="dsa" depends="compile" description="Run program">
+  <target name="dsa" depends="prepare" description="Run program">
     <java classname="vavi.apps.em88.Disassembler" fork="yes">
       <classpath refid="project.class.path" />
       <arg line="roms/romn88.bin" />

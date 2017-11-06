@@ -615,14 +615,14 @@ Debug.println("4th rom: " + (rom4th + 1));
         /** 31h */
         private int uip2() { return !uiop.getPort2() ? 0x80 : 0x00; }
         /** 40h */
-        private int exton() { return (sw2 & 0x40) != 0  ? 0x00 : 0x08; }
+        private int exton() { return (sw2 & 0x40) != 0 ? 0x00 : 0x08; }
         /** 40h */
         private int vrtc() { return intc.getVrtc() ? 0x20 : 0x00; }
 
         /** 40h */
-        private int dcd() { return false  ? 0x00 : 0x40; }
+        private int dcd() { return false ? 0x00 : 0x40; }
         /** 40h */
-        private int busy() { return printer.isBusy()  ? 0x01 : 0x00; }
+        private int busy() { return printer.isBusy() ? 0x01 : 0x00; }
         /** 40h */
         private int shg() { return true ? 0x00 : 0x02; }
 

@@ -57,6 +57,7 @@ public class Test1 {
                     System.arraycopy(b, 0, ram, start + o, l);
                     o += l;
                 }
+                is.close();
 System.err.printf("%X - %X read\n", start, o);
             } catch (IOException e) {
                 System.err.println(e);
