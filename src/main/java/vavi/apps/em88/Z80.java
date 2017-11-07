@@ -25,7 +25,7 @@ import vavi.util.StringUtil;
 
 /**
  * Z80 Emulator.
- * 
+ *
  * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
  * @version 0.00 931205 nsano original 8080a instructions only <br>
  *          0.10 931208 nsano add Z80 instructions <br>
@@ -431,7 +431,7 @@ panel.repaint();
 
     /**
      * fetch a byte indicated by pc address.
-     * pc will be incremented one. 
+     * pc will be incremented one.
      */
     private final int fetchb() {
         int v = bus.peekb(pc);
@@ -441,7 +441,7 @@ panel.repaint();
 
     /**
      * fetch a word indicated by pc address.
-     * pc will be incremented two. 
+     * pc will be incremented two.
      */
     private final int fetchw() {
         int v = bus.peekw(pc);
@@ -918,7 +918,7 @@ private void debug1() {
 
     /**
      * test bit.
-     * z,h,n flags will be changed 
+     * z,h,n flags will be changed
      */
     private final void bit(int n, int o) {
         fz = ((o & bit_tbl[n]) != 0) ? false : true;

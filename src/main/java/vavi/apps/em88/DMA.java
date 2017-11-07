@@ -14,14 +14,14 @@ import vavi.util.StringUtil;
 
 /**
  * DMA Controller.
- * 
+ *
  * <pre>
- *  ch 0:	5 inch DMA type disk unit
- *  ch 1:	8 inch disk unit
- *  ch 2:	CRTC
- *  ch 3:	
+ *  ch 0:    5 inch DMA type disk unit
+ *  ch 1:    8 inch disk unit
+ *  ch 2:    CRTC
+ *  ch 3:
  * </pre>
- * 
+ *
  * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
  * @version 0.00 040102 nsano initial version <br>
  */

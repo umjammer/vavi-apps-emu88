@@ -19,7 +19,7 @@ import vavi.util.StringUtil;
 
 /**
  * Z80 disassembler.
- * 
+ *
  * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
  * @version 0.00 931209 nsano first <br>
  *          1.00 031228 nsano java porting <br>
@@ -66,46 +66,46 @@ class Disassembler implements Device {
         currentComment = null;
 
         switch (o1) {
-        case 0xcb:	// CB xx
+        case 0xcb:    // CB xx
             o2 = bus.peekb(address++);
             currentMnemonic = mnem1(o2);
             break;
-        case 0xdd:	// DD xx
-        case 0xfd:	// FD xx
+        case 0xdd:    // DD xx
+        case 0xfd:    // FD xx
             id = (o1 == 0xdd) ? "IX" : "IY";
             o2 = bus.peekb(address++);
             switch (o2) {
-            case 0x21:	// 21: ld ID,nn
+            case 0x21:    // 21: ld ID,nn
                 o3 = bus.peekb(address++);
                 o4 = bus.peekb(address++);
                 ad = (o4 << 8) + o3;
                 currentMnemonic = MessageFormat.format(mnem2(o2), id, toHex4(ad));
                 break;
-            case 0x22:	// 34: ld (nn),ID
+            case 0x22:    // 34: ld (nn),ID
                 o3 = bus.peekb(address++);
                 o4 = bus.peekb(address++);
                 ad = (o4 << 8) + o3;
                 currentMnemonic = MessageFormat.format(mnem2(o2), toHex4(ad), id);
                 currentComment = toName(ad);
                 break;
-            case 0x29:	// 41: add ID,ID
+            case 0x29:    // 41: add ID,ID
                 currentMnemonic = MessageFormat.format(mnem2(o2), id, id);
                 break;
-            case 0x2a:	// 42: ld ID,(nn)
+            case 0x2a:    // 42: ld ID,(nn)
                 o3 = bus.peekb(address++);
                 o4 = bus.peekb(address++);
                 ad = (o4 << 8) + o3;
                 currentMnemonic = MessageFormat.format(mnem2(o2), id, toHex4(ad));
                 currentComment = toName(ad);
                 break;
-            case 0x36:	// 54: foo (ID + d), n
-                o3 = bus.peekb(address++);		// d
-                o4 = bus.peekb(address++);		// n
+            case 0x36:    // 54: foo (ID + d), n
+                o3 = bus.peekb(address++);        // d
+                o4 = bus.peekb(address++);        // n
                 currentMnemonic = MessageFormat.format(mnem2(o2), id, toHex2(o3), toHex2(o4));
                 break;
-            case 0xcb:	// ID cb d xx
-                o3 = bus.peekb(address++);		// d
-                o4 = bus.peekb(address++);		// xx
+            case 0xcb:    // ID cb d xx
+                o3 = bus.peekb(address++);        // d
+                o4 = bus.peekb(address++);        // xx
                 currentMnemonic = MessageFormat.format(mnem3(o4), id, toHex2(o3));
                 break;
             default:
@@ -113,7 +113,7 @@ class Disassembler implements Device {
                 case 2:
                     currentMnemonic = MessageFormat.format(mnem2(o2), id);
                     break;
-                case 3:	// ID + d
+                case 3:    // ID + d
                     o3 = bus.peekb(address++);
                     currentMnemonic = MessageFormat.format(mnem2(o2), id, toHex2(o3));
                     break;
@@ -121,7 +121,7 @@ class Disassembler implements Device {
                 break;
             }
             break;
-        case 0xed:	// ED xx
+        case 0xed:    // ED xx
             o2 = bus.peekb(address++);
             switch (type4(o2)) {
             case 2:
@@ -136,7 +136,7 @@ class Disassembler implements Device {
                 break;
             }
             break;
-        default:	// base 0x00 ~ 0xff
+        default:    // base 0x00 ~ 0xff
             switch (type(o1)) {
             case 1:
                 currentMnemonic = mnem(o1);
@@ -145,17 +145,17 @@ class Disassembler implements Device {
                 o2 = bus.peekb(address++);
                 currentMnemonic = MessageFormat.format(mnem(o1), toHex2(o2));
                 break;
-            case 202:	// jr, djnz
+            case 202:    // jr, djnz
                 o2 = bus.peekb(address++);
                 currentMnemonic = MessageFormat.format(mnem(o1), toHex2(o2));
                 currentComment = toHex4(address + (byte) o2);
                 break;
-            case 302:	// in a,n
+            case 302:    // in a,n
                 o2 = bus.peekb(address++);
                 currentMnemonic = MessageFormat.format(mnem(o1), toHex2(o2));
                 currentComment = toNameI(o2);
                 break;
-            case 402:	// out n,a
+            case 402:    // out n,a
                 o2 = bus.peekb(address++);
                 currentMnemonic = MessageFormat.format(mnem(o1), toHex2(o2));
                 currentComment = toNameO(o2);
@@ -385,6 +385,6 @@ Debug.println(StringUtil.toHex4(start) + ", " + StringUtil.toHex8(bytes));
             pc = next;
         }
     }
-}    
+}
 
 /* */

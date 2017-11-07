@@ -17,7 +17,7 @@ import vavi.util.StringUtil;
 
 /**
  * Z80 Debugger.
- * 
+ *
  * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
  * @version 0.10 931205 original (CP/M debugger) <br>
  *          0.20 931207 Z80 debugger <br>
@@ -71,7 +71,7 @@ public class Debugger implements Device {
     }
 
     private void help() {
-    	System.err.println(
+        System.err.println(
                 "x[rr=nn]\tchange register\n" +
                 "d[nn]\t\tdump memory\n" +
                 "e[nn]\t\twrite memory\n" +
@@ -154,7 +154,7 @@ public class Debugger implements Device {
             z80.setHL(Integer.parseInt(buf.substring(3), 16));
         } else if (buf.startsWith("pc=")) {
             currentAddress = Integer.parseInt(buf.substring(3), 16);
-            z80.setPC(currentAddress); 
+            z80.setPC(currentAddress);
         } else if (buf.startsWith("sp=")) {
             z80.setSP(Integer.parseInt(buf.substring(3), 16));
         } else {
@@ -270,7 +270,7 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
         hexDump(dumpedAddress, 256);
         dumpedAddress += 256;
 
-        if (dumpedAddress > 0xffff) {	// TODO
+        if (dumpedAddress > 0xffff) {    // TODO
             dumpedAddress = 0;
         }
     }

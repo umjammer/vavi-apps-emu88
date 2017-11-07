@@ -22,7 +22,7 @@ import vavi.util.StringUtil;
  */
 public class PC88 {
 
-    public interface View { 
+    public interface View {
         void setController(Controller controller);
 
         void reset();
@@ -43,7 +43,7 @@ public class PC88 {
         this.view = view;
     }
 
-    public interface Controller { 
+    public interface Controller {
     }
 
     public interface RomDao {
@@ -140,7 +140,7 @@ Debug.println("sw2: " + StringUtil.toHex2(sw2));
     // memory mode
     private static final boolean RAM = true;
     private static final boolean ROM = false;
-    // ROM mode	(ROM 3, 4)
+    // ROM mode    (ROM 3, 4)
     private static final boolean N = true;
     //          (ROM 1, 2)
     private static final boolean N88 = false;

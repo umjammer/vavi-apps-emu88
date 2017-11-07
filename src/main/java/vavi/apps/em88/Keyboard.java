@@ -16,16 +16,16 @@ import vavi.util.Debug;
 
 /**
  * PC-8801 のキーボードをエミュレーションします．
- * 
+ *
  * TODO 三つ押されたら四つ目が反応する件
  * <pre>
- * 
+ *
  *  -X--X-
  *   |  |
  *  -O--X-
  *   ↑ ここ
  * </pre>
- * 
+ *
  * @author <a href=mailto:vavivavi@yahoo.co.jp>Naohide Sano</a> (nsano)
  * @version 0.00 031229 nsano initial version <br>
  *          0.10 040102 nsano complete <br>
@@ -719,8 +719,8 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
         case KeyEvent.VK_F12:
             keyPort[10] |= RK_COPY;
             break;
-//      case KeyEvent.:	keyPort[10] |= RK_NUMPAD_MINUS;	break;
-//      case KeyEvent.:	keyPort[10] |= RK_NUMPAD_SLASH;	break;
+//      case KeyEvent.:    keyPort[10] |= RK_NUMPAD_MINUS;    break;
+//      case KeyEvent.:    keyPort[10] |= RK_NUMPAD_SLASH;    break;
         case KeyEvent.VK_CAPS_LOCK:
             keyPort[10] |= RK_CAPS_LOCK;
             break;

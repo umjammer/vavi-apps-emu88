@@ -9,7 +9,7 @@ package vavi.apps.em88;
 
 /**
  * Device.
- * 
+ *
  * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
  * @version 0.00 040111 nsano initial version <br>
  */

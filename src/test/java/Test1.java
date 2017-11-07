@@ -15,7 +15,7 @@ import vavi.apps.em88.Z80;
 
 
 /**
- * Test1. 
+ * Test1.
  *
  * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
  * @version 0.00 080414 nsano initial version <br>

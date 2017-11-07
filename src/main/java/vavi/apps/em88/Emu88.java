@@ -37,7 +37,7 @@ import vavi.apps.em88.PC88.View;
 
 /**
  * PC-8801 emulator.
- * 
+ *
  * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
  * @version 0.10 931205 nsano original (CP/M emulator) <br>
  *          0.20 931208 nsano PC-8801 emulation version <br>
@@ -96,7 +96,7 @@ class Emu88 {
     }
 
     /**
-     *  Graphics 
+     *  Graphics
      */
     static class SwingView implements View {
         /** */
