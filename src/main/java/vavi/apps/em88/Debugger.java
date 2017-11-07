@@ -50,7 +50,7 @@ public class Debugger implements Device {
     private int currentAddress = 0;
     /** */
     private int brakeAddress = -1;
-    
+
     /** */
     private void displayRegs() {
         System.out.println(
@@ -69,7 +69,7 @@ public class Debugger implements Device {
             " Z:" + (z80.isZ() ? 1 : 0) +
             " S:" + (z80.isS() ? 1 : 0));
     }
-    
+
     private void help() {
     	System.err.println(
                 "x[rr=nn]\tchange register\n" +
@@ -92,10 +92,10 @@ public class Debugger implements Device {
                 "n is 8 bit hex number\n" +
                 "r is register (a,bc,de,hl)\n");
     }
-    
+
     /** */
     private void hexDump(int address, int length) {
-        
+
         for (int y = 0; y < (length + 15) / 16; y++) {
             System.out.print(StringUtil.toHex4(address + y * 16) + " ");
             for (int x = 0; x < 16; x++) {
@@ -117,7 +117,7 @@ public class Debugger implements Device {
             System.out.println();
         }
     }
-    
+
     /** */
     private int list(int address) {
 
@@ -139,11 +139,11 @@ public class Debugger implements Device {
 
         return movedAddress;
     }
-    
+
     /** */
     private void setRegs(String buf) {
         buf = buf.substring(1).toLowerCase();
-        
+
         if (buf.startsWith("a=")) {
             z80.setA(Integer.parseInt(buf.substring(2), 16));
         } else if (buf.startsWith("bc=")) {
@@ -163,7 +163,7 @@ public class Debugger implements Device {
 
         displayRegs();
     }
-    
+
     /** */
     private int listedAddress = 0;
 
@@ -173,7 +173,7 @@ public class Debugger implements Device {
         if (buf.length() > 1) {
             listedAddress = Integer.parseInt(buf.substring(1), 16);
         }
-        
+
         for (int i = 0; i < 8; i++) {
             listedAddress = list(listedAddress);
         }
@@ -183,7 +183,7 @@ public class Debugger implements Device {
     private void readFile(String buf) throws IOException {
 
         StringTokenizer st = new StringTokenizer(buf, ",\t ");
-        
+
         if (st.countTokens() < 3) {
             return;
         }
@@ -203,43 +203,43 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
 //System.out.println("address " + StringUtil.toHex4(address) + "=" + StringUtil.toHex2(k));
             bus.pokeb(p, c);
         }
-        
+
         fp.close();
 //System.out.println("read file " + filename + " address " + StringUtil.toHex4(address) + ", " + (p - address) + " bytes");
     }
-    
+
     /** */
     private void outputPort(String buf) {
-        
+
         StringTokenizer st = new StringTokenizer(buf, ",\t ");
-        
+
         if (st.countTokens() < 2) {
             return;
         }
-        
+
         int port = Integer.parseInt(st.nextToken(), 16);
         int data = Integer.parseInt(st.nextToken(), 16);
-        
+
         bus.outp(port, data);
     }
-    
+
     /** */
     private void inputPort(String buf) {
-        
+
         int port = Integer.parseInt(buf.substring(1), 16);
-        
+
         int data = bus.inp(port);
-        
+
         System.out.println("in " + StringUtil.toHex2(port) +
                            " = " + StringUtil.toHex2(data));
     }
-    
+
     /** */
     private int editedAddress = 0;
 
     /** */
     private void editMemory(String buf) throws IOException {
-        
+
         if (buf.length() > 1) {
             editedAddress = Integer.parseInt(buf.substring(1), 16);
         }
@@ -257,10 +257,10 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
             editedAddress++;
         }
     }
-    
+
     /** */
     private int dumpedAddress = 0;
-        
+
     /** */
     private void dumpMemory(String buf) {
 
@@ -274,13 +274,13 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
             dumpedAddress = 0;
         }
     }
-    
+
     /**
      * @return current address is brake point or not.
      */
     private boolean step(boolean verbose) {
         currentAddress = z80.execute(currentAddress, 1);
-        
+
         if (currentAddress == brakeAddress) {
             System.err.println("break point");
             return true;
@@ -293,13 +293,13 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
             displayRegs();
             list(currentAddress);
         }
-        
+
         return false;
     }
-    
+
     /** */
     private void go(int length, boolean verbose) {
-        
+
         if (length != 0) {
             for (int i = 0; i < length; i++) {
                 if (step(verbose)) {
@@ -325,11 +325,11 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
                 break;
             }
         }
-        
+
         displayRegs();
         list(currentAddress);
     }
-    
+
     /** */
     private BufferedReader reader =
             new BufferedReader(new InputStreamReader(System.in));
@@ -340,7 +340,7 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
     public void execute() {
 
         System.err.println("Z80 Debugger Copyright (c) 1993-2003 by vavi");
-        
+
         while (true) {
             try {
                 System.out.print(">");
@@ -416,5 +416,5 @@ e.printStackTrace(System.err);
         }
     }
 }
-    
+
 /* */

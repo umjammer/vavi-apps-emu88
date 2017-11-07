@@ -232,7 +232,7 @@ if (currentMnemonic == null) {
 //  private final int type3(int p) { return table_IDcb[p].type; }
     /** ED xx */
     private final int type4(int p) { return table_ed[p].type; }
-    
+
     /** */
     private static class Entry {
         Entry(int type, int length, String mnemonic) {

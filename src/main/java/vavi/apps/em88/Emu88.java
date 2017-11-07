@@ -83,9 +83,9 @@ class Emu88 {
         if (cl.hasOption("2")) {
             pc88.setDipSwitch1(~Integer.parseInt(cl.getOptionValue("2"), 16));
         }
-        
+
         System.err.println("PC-8801 emulator Copyright (c) 1993-2003 by vavi");
-        
+
         pc88.setView(new SwingView());
         pc88.setRomDao(new MyRomDao());
         pc88.reset();
@@ -113,12 +113,12 @@ class Emu88 {
         public void setTextVram(int c, int l, int value) {
             tvram[l][c] = value;
         }
-        
+
         /* */
         public int getTextVram(int c, int l) {
             return tvram[l][c];
         }
-        
+
         /** */
         private int W = 8;
         /** */
@@ -212,7 +212,7 @@ class Emu88 {
         /** */
         public void read(String filename, byte[] buf, int length) {
             try {
-    
+
                 InputStream is = Emu88.class.getResourceAsStream(filename);
                 int l = 0;
                 while (l < length) {
