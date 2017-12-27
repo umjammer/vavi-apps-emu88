@@ -38,7 +38,7 @@ import vavi.apps.em88.PC88.View;
 /**
  * PC-8801 emulator.
  *
- * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.10 931205 nsano original (CP/M emulator) <br>
  *          0.20 931208 nsano PC-8801 emulation version <br>
  *          1.00 031228 nsano java porting <br>

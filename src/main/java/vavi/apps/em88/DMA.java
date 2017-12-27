@@ -22,7 +22,7 @@ import vavi.util.StringUtil;
  *  ch 3:
  * </pre>
  *
- * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 040102 nsano initial version <br>
  */
 class DMA implements Device {

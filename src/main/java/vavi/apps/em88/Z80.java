@@ -26,7 +26,7 @@ import vavi.util.StringUtil;
 /**
  * Z80 Emulator.
  *
- * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 931205 nsano original 8080a instructions only <br>
  *          0.10 931208 nsano add Z80 instructions <br>
  *          1.00 031228 nsano java porting <br>

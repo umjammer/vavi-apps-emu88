@@ -20,7 +20,7 @@ import vavi.util.StringUtil;
 /**
  * Z80 disassembler.
  *
- * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 931209 nsano first <br>
  *          1.00 031228 nsano java porting <br>
  *          2.00 040111 nsano outsource instructions <br>

@@ -26,7 +26,7 @@ import vavi.util.Debug;
  *   ↑ ここ
  * </pre>
  *
- * @author <a href=mailto:vavivavi@yahoo.co.jp>Naohide Sano</a> (nsano)
+ * @author <a href=mailto:umjammer@gmail.com>Naohide Sano</a> (nsano)
  * @version 0.00 031229 nsano initial version <br>
  *          0.10 040102 nsano complete <br>
  *          0.11 040104 nsano clean up <br>

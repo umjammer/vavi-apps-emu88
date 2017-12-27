@@ -12,7 +12,7 @@ import vavi.apps.em88.PC88.View;
 /**
  * PC-8801 emulator Graphics Section.
  *
- * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 031230 nsano initial version <br>
  */
 final class Graphic implements Device {

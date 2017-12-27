@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Bus.
  *
- * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.10 931205 nsano initial version <br>
  *          0.20 931208 nsano add Z80 instruction <br>
  *          1.00 031228 nsano java porting <br>

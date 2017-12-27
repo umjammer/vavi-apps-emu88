@@ -15,7 +15,7 @@ import vavi.util.StringUtil;
  * <p>
  * TODO TODO メモリの {@link Device} 化
  * </p>
- * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 931205 nsano first version <br>
  *          0.10 931206 nsano add sub system <br>
  *          1.00 031228 nsano java porting <br>

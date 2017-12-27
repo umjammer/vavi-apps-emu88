@@ -18,7 +18,7 @@ import vavi.util.StringUtil;
 /**
  * Z80 Debugger.
  *
- * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.10 931205 original (CP/M debugger) <br>
  *          0.20 931207 Z80 debugger <br>
  *          1.00 031228 nsano java porting <br>
