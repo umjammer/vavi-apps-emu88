@@ -5,27 +5,26 @@
 <!--                                                                        -->
 <!-- Written by Naohide Sano                                                -->
 <!--                                                                        -->
-<!-- em88                                                                   -->
+<!-- vavi-apps-emu88                                                        -->
 <!--                                                                        -->
 <!-- @author Naohide Sano                                                   -->
 <!-- @version 0.00 031228 nsano initial version                             -->
 <!--                                                                        -->
 <!-- ////////////////////////////////////////////////////////////////////// -->
 
-<project name="vavi-apps-em88" default="run" basedir="."
+<project name="vavi-apps-emu88" default="run" basedir="."
   xmlns:artifact="urn:maven-artifact-ant">
 
   <path id="maven-ant-tasks.classpath">
-    <fileset dir="${user.home}/lib/java/maven-ant-tasks">
-      <include name="*.jar" />
+    <fileset dir="${user.home}/lib/java">
+      <include name="maven-ant-tasks*.jar" />
     </fileset>
   </path>
-  <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
-           uri="urn:maven-artifact-ant"
-           classpathref="maven-ant-tasks.classpath" />
+  <typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="urn:maven-artifact-ant"
+           classpathref="maven-ant-tasks.classpath" /> 
 
+  <property environment="env"/>
   <property file="local.properties" />
-
   <xmlproperty file="pom.xml" />
 
   <!-- Path Definitions -->
@@ -42,9 +41,10 @@
       <pom refid="maven.project" />
     </artifact:dependencies>
     <artifact:mvn pom="pom.xml">
+      <arg value="-q" />
       <arg value="clean" />
       <arg value="package" />
-      <arg value="-Dmaven.test.skip=true"/>
+      <arg value="-DskipTests=true" />
     </artifact:mvn>
   </target>
 

@@ -6,13 +6,13 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>vavi</groupId>
-  <artifactId>vavi-apps-em88</artifactId>
+  <artifactId>vavi-apps-emu88</artifactId>
   <name>Vavi PC-8801 Emulatior Application</name>
   <organization>
     <name></name>
   </organization>
   <version>0.0.1</version>
-  <url>https://github.com/umjammer/vavi-apps-em88</url>
+  <url>https://github.com/umjammer/vavi-apps-emu88</url>
   <description></description>
   <build>
     <plugins>
@@ -27,51 +27,21 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>native2ascii-maven-plugin</artifactId>
+        <version>2.0.1</version>
         <executions>
           <execution>
             <goals>
-              <goal>native2ascii</goal>
+              <goal>resources</goal>
             </goals>
             <configuration>
               <includes>
-                <include>address.properties</include>
-                <include>import.properties</include>
-                <include>outport.properties</include>
+                <include>**/*_ja.properties</include>
               </includes>
             </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
-    <pluginManagement>
-      <plugins>
-        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>native2ascii-maven-plugin</artifactId>
-                    <versionRange>[1.0-alpha-1,)</versionRange>
-                    <goals>
-                      <goal>native2ascii</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <execute/>
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
   </build>
   <repositories>
     <repository>
@@ -99,9 +69,9 @@
     </dependency>
   </dependencies>
   <scm>
-    <url>https://github.com/umjammer/vavi-apps-em88</url>
+    <url>https://github.com/umjammer/vavi-apps-emu88</url>
   </scm>
   <issueManagement>
-    <url>https://github.com/umjammer/vavi-apps-em88/issues</url>
+    <url>https://github.com/umjammer/vavi-apps-emu88/issues</url>
   </issueManagement>
 </project>
