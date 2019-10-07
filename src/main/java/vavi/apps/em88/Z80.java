@@ -3538,8 +3538,8 @@ Debug.println("halt: " + StringUtil.toHex4(pc - 1));
     /**
      * dd cb b xx
      * <p>
-      * �Ō�� pc += 2 ����̂� fetch �p���Ȃ� (�ȉ����l)
-    * </p>
+     * 最後に pc += 2 するので fetch 用いない (以下同様)
+     * </p>
      */
     private final void exec_ddcb() {
         int v = bus.peekb(pc + 1);
@@ -4401,7 +4401,7 @@ Debug.println("im 2");
     /**
      * fd cb b xx
      * <p>
-     * �Ō�� pc += 2 ����̂� fetch �p���Ȃ� (�ȉ����l)
+     * 最後に pc += 2 するので fetch 用いない (以下同様)
      * </p>
      */
     private final void exec_fdcb() {
