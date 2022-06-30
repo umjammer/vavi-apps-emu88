@@ -1,8 +1,10 @@
-# PC-8801 emulator．
+# vavi-apps-em88
 
-## TODO これから実装すること
+PC-8801 emulator．
 
- * DMA の最適化
- * DISK システム
- * サブシステム
+## TODO
+
+ * DMA optimization
+ * DISK system
+ * subsystem
  * CRTC
