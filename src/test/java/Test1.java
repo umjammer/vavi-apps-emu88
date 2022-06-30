@@ -4,14 +4,17 @@
  * Programmed by Naohide Sano
  */
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.junit.jupiter.api.Test;
 import vavi.apps.em88.Bus;
 import vavi.apps.em88.Debugger;
 import vavi.apps.em88.Z80;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static vavi.apps.em88.Z80.add16bitInternal;
 
 
 /**
@@ -23,12 +26,12 @@ import vavi.apps.em88.Z80;
 public class Test1 {
 
     /** */
-    private static Bus testBus = new Bus() {
+    private final static Bus testBus = new Bus() {
 
         byte[] ram = new byte[0x10000];
 
         /** */
-        protected final Mapping getMapping(int address, Direction direction) {
+        protected Mapping getMapping(int address, Direction direction) {
             Mapping mapping = new Mapping();
             mapping.base = ram;
             mapping.pointer = address;
@@ -48,7 +51,7 @@ public class Test1 {
             try {
                 int start = 0x0000;
                 String file = "/asm.out";
-                InputStream is = new BufferedInputStream(new FileInputStream(file));
+                InputStream is = Test1.class.getResourceAsStream(file);
                 byte[] b = new byte[8192];
                 int o = 0;
                 is.skip(10);
@@ -89,6 +92,16 @@ System.err.printf("%X - %X read\n", start, o);
         debugger.execute();
 
         System.exit(0);
+    }
+
+    @Test
+    void testIndex() {
+        assertEquals(101, add16bitInternal(100, (byte) 0x01));
+        assertEquals(99, add16bitInternal(100, (byte) 0xff));
+        assertEquals(99, add16bitInternal(100, (byte) 255));
+        assertEquals(100, add16bitInternal(100, (byte) 256));
+        assertEquals(0, add16bitInternal(0xffff, (byte) 1));
+        assertEquals(0xffff, add16bitInternal(0, (byte) -1));
     }
 }
 

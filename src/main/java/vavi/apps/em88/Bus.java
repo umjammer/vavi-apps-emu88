@@ -9,6 +9,9 @@ package vavi.apps.em88;
 import java.util.HashMap;
 import java.util.Map;
 
+import static vavi.apps.em88.Z80.add16bitInternal;
+import static vavi.apps.em88.Z80.inc16bitInternal;
+
 
 /**
  * Bus.
@@ -41,21 +44,21 @@ public abstract class Bus {
      */
     protected abstract Mapping getMapping(int address, Direction direction);
 
-    /** */
+    /** @return unsigned byte */
     public final int peekb(int address) {
         Mapping mapping = getMapping(address, Direction.READ);
         return mapping.base[mapping.pointer] & 0xff;
     }
 
-    /** */
+    /** @return unsigned short */
     public final int peekw(int address) {
         int l = peekb(address);
-        int h = peekb(address + 1);
+        int h = peekb(inc16bitInternal(address));
 
         return (h << 8) | l;
     }
 
-    /** */
+    /** @param value unsigned byte */
     public void pokeb(int address, int value) {
         Mapping mapping = getMapping(address, Direction.WRITE);
         mapping.base[mapping.pointer] = (byte) (value & 0xff);
@@ -65,15 +68,26 @@ public abstract class Bus {
     /** */
     public final void pokew(int address, int value) {
         pokeb(address, value);
-        pokeb(address + 1, value >> 8);
+        pokeb(inc16bitInternal(address), value >> 8);
 // Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
     }
 
     /** */
     public final void pokew(int address, int h, int l) {
         pokeb(address, h);
-        pokeb(address + 1, l);
+        pokeb(inc16bitInternal(address), l);
 // Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
+    }
+
+    /** */
+    public void pokes(int address, byte[] b, int ofs, int len) {
+        Mapping mapping = getMapping(address, Direction.WRITE);
+        System.arraycopy(b, ofs, mapping.base, mapping.pointer, len);
+    }
+
+    /** */
+    public void pokes(int address, byte[] b) {
+        pokes(address, b, 0, b.length);
     }
 
     /** */
@@ -101,6 +115,28 @@ public abstract class Bus {
     public void reset() {
         for (Device device : devices.values()) {
             device.setBus(this);
+        }
+    }
+
+    /** for test */
+    public static class SimpleBus extends Bus {
+        final byte[] ram = new byte[0x10000];
+        final byte[] io = new byte[0x100];
+        Mapping address = new Mapping();
+
+        { address.base = ram; }
+
+        @Override protected Mapping getMapping(int a, Direction direction) {
+            address.pointer = a;
+            return address;
+        }
+
+        @Override public int inp(int p) {
+            return io[p & 0xff] & 0xff;
+        }
+
+        @Override public void outp(int p, int d) {
+            io[p & 0xff] = (byte) (d & 0xff);
         }
     }
 }

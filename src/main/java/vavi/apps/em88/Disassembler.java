@@ -331,28 +331,12 @@ Debug.printStackTrace(e);
 //}
     }
 
-    /** */
+    /** run disassembler */
     public static void main(String[] args) throws IOException {
-        final byte[] ram = new byte[0x10000];
-        Bus bus = new Bus() {
-            protected Mapping getMapping(int a, Direction direction) {
-                Mapping address = new Mapping();
-                address.base = ram;
-                address.pointer = a;
-                return address;
-            }
-            public int inp(int p) { return -1; }
-            public void outp(int p, int d) {}
-        };
+        Bus bus = new Bus.SimpleBus();
 
-        File file = new File(args[0]);
-        int length = (int) file.length();
-        InputStream is = new FileInputStream(file);
-        int l = 0;
-        while (l < length) {
-            l += is.read(ram, l, length - l);
-        }
-        is.close();
+        Path file = Paths.get(args[0]);
+        bus.pokes(0, Files.readAllBytes(file));
 
         int start = 0;
         if (args.length > 1) {
