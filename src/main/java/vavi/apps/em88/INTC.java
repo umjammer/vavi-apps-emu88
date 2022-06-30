@@ -135,7 +135,7 @@ class INTC implements Device {
         public void run() {
             vrtc = !vrtc;
         }
-    };
+    }
 
     /** */
     private class IntcTimerTask extends TimerTask {
@@ -155,7 +155,7 @@ class INTC implements Device {
 
             // if (channel == 1) { vrtc = false; }
         }
-    };
+    }
 }
 
 /* */

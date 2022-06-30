@@ -51,7 +51,7 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
         return keyPort[port];
     }
 
-    /** */ {
+    /* */ {
         for (int i = 0; i < 12; i++) {
             keyPort[i] = 0xff;
         }

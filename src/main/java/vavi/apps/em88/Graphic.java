@@ -132,7 +132,7 @@ final class Graphic implements Device {
     }
 
     /** */
-    public final void pokeb(int offset, int data) {
+    public void pokeb(int offset, int data) {
 
         int c = offset % 120;
         int l = offset / 120;

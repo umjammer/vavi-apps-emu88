@@ -137,7 +137,7 @@ Debug.println("channel " + i + " stop");
             }
             graphic.repaint();
         }
-    };
+    }
 }
 
 /* */

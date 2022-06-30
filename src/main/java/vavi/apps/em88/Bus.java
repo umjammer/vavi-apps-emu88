@@ -22,7 +22,7 @@ import java.util.Map;
 public abstract class Bus {
 
     /** ある状況で実際どのメモリにマッピングされているかを現すクラスです。 */
-    public final class Mapping {
+    public static final class Mapping {
         /** */
         public byte[] base;
         /** */
