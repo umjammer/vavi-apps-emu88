@@ -31,7 +31,7 @@ class POP_rr_tests extends InstructionsExecutionTestsBase {
         short value = fixture.create(Short.TYPE);
         short oldSP = fixture.create(Short.TYPE);
 
-        sut.setSP(oldSP);
+        sut.setSP(oldSP & 0xffff);
         sut.getBus().pokew(oldSP, value);
 
         executeAt(instructionAddress, opcode, prefix);
