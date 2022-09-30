@@ -83,9 +83,9 @@ public class PC88 {
 
     /** */
     public void reset() {
-        romDao.read("/roms/romn88.bin", ROM_N88, 0x8000);
-        romDao.read("/roms/romn.bin", ROM_N, 0x8000);
-        romDao.read("/roms/rom4th.bin", ROM_4TH[0], 0x2000);
+        romDao.read("N88", ROM_N88, 0x8000);
+        romDao.read("N80", ROM_N, 0x8000);
+        romDao.read("4TH", ROM_4TH[0], 0x2000);
 //      romDao.read("/roms/romsub.bin", ROM_SUB, 0x800);
 
         mainBus.addDevice(graphic);

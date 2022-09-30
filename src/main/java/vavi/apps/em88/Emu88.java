@@ -20,6 +20,10 @@ import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -32,6 +36,7 @@ import org.klab.commons.cli.Options;
 import vavi.apps.em88.PC88.Controller;
 import vavi.apps.em88.PC88.RomDao;
 import vavi.apps.em88.PC88.View;
+import vavi.net.www.protocol.URLStreamHandlerUtil;
 import vavi.util.Debug;
 import vavi.util.StringUtil;
 
@@ -46,6 +51,10 @@ import vavi.util.StringUtil;
  */
 @Options
 class Emu88 {
+
+    static {
+        URLStreamHandlerUtil.loadService();
+    }
 
     @Option(option = "d", argName = "debug mode")
     boolean debugMode;
@@ -201,12 +210,13 @@ Debug.println("set font correctly: " + path);
                 for (int c = 0; c < 80; c++) {
                     Image image = textCharacters[tvram[l][c]];
                     g.drawImage(image, c * W, l * H, null);
+//if (Character.isLetterOrDigit((char) tvram[l][c])) Debug.println((char) tvram[l][c]);
                 }
             }
         }
 
         /**
-         * @param controller should be instance of KeyListener
+         * @param controller should be an instance of KeyListener
          */
         public void setController(Controller controller) {
             frame.addKeyListener((KeyListener) controller);
@@ -230,9 +240,18 @@ Debug.println("set font correctly: " + path);
     }
 
     static class MyRomDao implements RomDao {
+        static final Map<String, String> roms = new HashMap<String, String>() {{
+            put("N88", "classpath:roms/romn88.bin");
+            put("N80", "classpath:roms/romn.bin");
+            put("4TH", "classpath:roms/rom4th.bin");
+//            put("N88", "file:///Users/nsano/.config/quasi88/rom/N88.ROM");
+//            put("N80", "file:///Users/nsano/.config/quasi88/rom/N80.ROM");
+//            put("4TH", "file:///Users/nsano/.config/quasi88/rom/N88EXT0.ROM");
+        }};
+
         /** */
-        public void read(String filename, byte[] buf, int length) {
-            try (InputStream is = Emu88.class.getResourceAsStream(filename)) {
+        public void read(String tag, byte[] buf, int length) {
+            try (InputStream is = URI.create(roms.get(tag)).toURL().openStream()) {
                 int l = 0;
                 while (l < length) {
                     int r = is.read(buf, l, length - l);
@@ -243,7 +262,7 @@ Debug.println("Illegal EOF: " + l + "/" + length);
                     l += r;
                 }
             } catch (NullPointerException e) {
-Debug.println("set roms correctly: " + filename);
+Debug.println(Level.SEVERE, "set roms correctly: " + roms.get(tag));
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
