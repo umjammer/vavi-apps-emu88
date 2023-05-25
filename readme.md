@@ -13,3 +13,9 @@ PC-8801 emulator．
  * DISK system
  * subsystem
  * CRTC
+ * unit tests have random fixture problems, if it would be failed, rerun.
+
+## References
+
+ * https://github.com/javaemus/consoleflex056
+ * https://github.com/mamedev/mame/tree/master/src/lib/formats

@@ -10,7 +10,7 @@
   <artifactId>vavi-apps-emu88</artifactId>
   <version>0.0.1</version>
 
-  <name>Vavi PC-8801 Emulatior Application</name>
+  <name>Vavi PC-8801 Emulator Application</name>
   <organization>
     <name>vavi</name>
   </organization>
@@ -21,7 +21,7 @@
   <issueManagement>
     <url>https://github.com/umjammer/vavi-apps-emu88/issues</url>
   </issueManagement>
-  <description>PC-8801 Emulatior Application</description>
+  <description>PC-8801 Emulator Application</description>
 
   <build>
     <plugins>
@@ -46,7 +46,7 @@
             </goals>
             <configuration>
               <includes>
-                <include>**/*_ja.properties</include>
+                <include>**/*_ja_JP.properties</include>
               </includes>
             </configuration>
           </execution>
@@ -81,7 +81,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.9.0</version>
+        <version>5.9.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -97,7 +97,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId>
       <artifactId>vavi-commons</artifactId>
-      <version>1.1.7</version>
+      <version>1.1.9</version>
     </dependency>
 
     <dependency>
@@ -130,7 +130,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.8.0</version>
+      <version>5.2.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
