@@ -6,18 +6,15 @@
 
 package vavi.apps.em88;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Properties;
 
 import vavi.util.Debug;
-import vavi.util.StringUtil;
 
 
 /**
@@ -186,13 +183,13 @@ if (currentMnemonic == null) {
     }
 
     /** */
-    private String toHex2(int value) { return StringUtil.toHex2(value); }
+    private static String toHex2(int value) { return String.format("%02x", value); }
     /** */
-    private String toHex4(int value) { return StringUtil.toHex4(value); }
+    private static String toHex4(int value) { return String.format("%04x", value); }
 
     /** */
-    private String toName(int value) {
-        String key = StringUtil.toHex4(value);
+    private static String toName(int value) {
+        String key = toHex4(value);
         if (names.containsKey(key)) {
             return names.getProperty(key);
         } else {
@@ -201,8 +198,8 @@ if (currentMnemonic == null) {
     }
 
     /** */
-    private String toNameI(int value) {
-        String key = StringUtil.toHex2(value);
+    private static String toNameI(int value) {
+        String key = toHex2(value);
         if (inportNames.containsKey(key)) {
             return inportNames.getProperty(key);
         } else {
@@ -211,8 +208,8 @@ if (currentMnemonic == null) {
     }
 
     /** */
-    private String toNameO(int value) {
-        String key = StringUtil.toHex2(value);
+    private static String toNameO(int value) {
+        String key = toHex2(value);
         if (outportNames.containsKey(key)) {
             return outportNames.getProperty(key);
         } else {
@@ -221,20 +218,20 @@ if (currentMnemonic == null) {
     }
 
     /** */
-    private String mnem1(int p) { return table_cb[p].mnemonic; }
-    private String mnem2(int p) { return table_ID[p].mnemonic; }
-    private String mnem3(int p) { return table_IDcb[p].mnemonic; }
-    private String mnem4(int p) { return table_ed[p].mnemonic; }
-    private String mnem(int p) { return table_base[p].mnemonic; }
-    private int type(int p) { return table_base[p].type; }
+    private static String mnem1(int p) { return table_cb[p].mnemonic; }
+    private static String mnem2(int p) { return table_ID[p].mnemonic; }
+    private static String mnem3(int p) { return table_IDcb[p].mnemonic; }
+    private static String mnem4(int p) { return table_ed[p].mnemonic; }
+    private static String mnem(int p) { return table_base[p].mnemonic; }
+    private static int type(int p) { return table_base[p].type; }
     /** CB xx */
-    private int type1(int p) { return table_cb[p].type; }
+    private static int type1(int p) { return table_cb[p].type; }
     /** DD/FD xx */
-    private int type2(int p) { return table_ID[p].type; }
+    private static int type2(int p) { return table_ID[p].type; }
     /** DD/FD CB xx */
-    private int type3(int p) { return table_IDcb[p].type; }
+    private static int type3(int p) { return table_IDcb[p].type; }
     /** ED xx */
-    private int type4(int p) { return table_ed[p].type; }
+    private static int type4(int p) { return table_ed[p].type; }
 
     /** */
     private static class Entry {
@@ -331,12 +328,20 @@ Debug.printStackTrace(e);
 //}
     }
 
-    /** run disassembler */
+    /**
+     * run disassembler
+     *
+     * @param args 0: file, 1: start address, 2: bytes, 3: offset
+     */
     public static void main(String[] args) throws IOException {
         Bus bus = new Bus.SimpleBus();
 
+        int offset = 0;
+        if (args.length > 3) {
+            offset = Integer.parseInt(args[3], 16);
+        }
+
         Path file = Paths.get(args[0]);
-        bus.pokes(0, Files.readAllBytes(file));
 
         int start = 0;
         if (args.length > 1) {
@@ -347,6 +352,9 @@ Debug.printStackTrace(e);
             bytes = Integer.parseInt(args[2], 16);
         }
 
+        byte[] data = Files.readAllBytes(file);
+        bus.pokes(start, Arrays.copyOfRange(data, offset, offset + bytes));
+
         Disassembler da = new Disassembler();
         da.setBus(bus);
 Debug.printf("%04x, %08x", start, bytes);
@@ -354,7 +362,7 @@ Debug.printf("%04x, %08x", start, bytes);
         while (pc - start < bytes) {
             int next = da.execute(pc);
 
-            System.out.print(StringUtil.toHex4(pc) + " ");
+            System.out.printf("%04x ", pc);
             for (int i = 0; i < 4; i++) {
                 if (i < next - pc) {
                     System.out.printf("%02x", bus.peekb(pc + i));
