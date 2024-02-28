@@ -48,21 +48,21 @@ class CRTC implements Device {
         this.command = command;
 
         switch (command) {
-        case 0x00:     // initialize, 0:reset
-            graphic.setTextDisplayed(false);    // TODO DMA off ???
+        case 0x00: // initialize, 0:reset
+            graphic.setTextDisplayed(false); // TODO DMA off ???
             break;
-        case 0x20:     // normal display
-        case 0x21:     // reverse display (now ignore)
-            graphic.setTextDisplayed(true);     // TODO DMA on ???
+        case 0x20: // normal display
+        case 0x21: // reverse display (now ignore)
+            graphic.setTextDisplayed(true); // TODO DMA on ???
             break;
-        case 0x43:     // interrupt mask
+        case 0x43: // interrupt mask
             break;
-        case 0x60:     // light pen get position
+        case 0x60: // light pen get position
             pos = 0;
 //        peninit();
             break;
-        case 0x70:     // cursor on, set position
-        case 0x71:     // cursor off, set position
+        case 0x70: // cursor on, set position
+        case 0x71: // cursor off, set position
             pos = 0;
             graphic.setCursorDisplaied((command - 0x70) != 0);
             break;
@@ -76,9 +76,9 @@ class CRTC implements Device {
      */
     public void setData(int data) {
         switch (command) {
-        case 0x00:     // initialize
+        case 0x00: // initialize
             switch (sf) {
-            case 0:     // 1: screen format 1
+            case 0: // 1: screen format 1
                 boolean c_b = (data & 0x80) != 0;
                 int h = data & 0x7f;
 if (h + 2 > 80) {
@@ -86,26 +86,26 @@ if (h + 2 > 80) {
 }
                 sf = 1;
                 break;
-            case 1:     // 2: screen format 2
+            case 1: // 2: screen format 2
                 int b = (data & 0xc0) >> 6;
                 sf = 2;
                 break;
-            case 2:     // 3: screen format 3
+            case 2: // 3: screen format 3
                 sf = 3;
                 break;
-            case 3:     // 4: screen format 4
+            case 3: // 4: screen format 4
                 sf = 4;
                 break;
-            case 4:     // 5: screen format 5
+            case 4: // 5: screen format 5
                 sf = 5;
                 break;
-            case 5:     // 6: screen format 6
+            case 5: // 6: screen format 6
                 sf = 0;
                 break;
             }
             break;
-        case 0x70:     // corsor on, set position
-        case 0x71:     // corsor off, set position
+        case 0x70: // corsor on, set position
+        case 0x71: // corsor off, set position
             if (pos == 0) {
                 curpos = data * 2;
                 pos = 1;
@@ -129,9 +129,9 @@ if (h + 2 > 80) {
     public int getData() {
         int data = 0;
         switch (command) {
-        case 0x00:     // reset
+        case 0x00: // reset
             break;
-        case 0x60:     // light pen get position
+        case 0x60: // light pen get position
 //            CURPOS = getpen();
             if (pos == 0) {
                 data = curpos % 160;

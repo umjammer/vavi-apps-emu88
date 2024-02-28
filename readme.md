@@ -1,8 +1,27 @@
-# PC-8801 emulator．
+[![Release](https://jitpack.io/v/umjammer/vavi-apps-emu88.svg)](https://jitpack.io/#umjammer/vavi-apps-emu88)
+[![Java CI](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/maven.yml)
+[![CodeQL](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/codeql-analysys.yml/badge.svg)](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/codeql-analysis.yml)
+![Java](https://img.shields.io/badge/Java-17-b07219)
 
-## TODO これから実装すること
+# vavi-apps-emu88
 
- * DMA の最適化
- * DISK システム
- * サブシステム
+PC-8801 emulator．
+
+## Install
+
+ * https://jitpack.io/#umjammer/vavi-apps-emu88
+
+## Usage
+
+## References
+
+* https://github.com/javaemus/consoleflex056
+* https://github.com/mamedev/mame/tree/master/src/lib/formats
+
+## TODO
+
+ * DMA optimization
+ * DISK system
+ * subsystem
  * CRTC
+ * unit tests have random fixture problems, if it would be failed, rerun.

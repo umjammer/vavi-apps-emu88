@@ -6,15 +6,15 @@
 
 package vavi.apps.em88;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Properties;
 
 import vavi.util.Debug;
-import vavi.util.StringUtil;
 
 
 /**
@@ -66,46 +66,46 @@ class Disassembler implements Device {
         currentComment = null;
 
         switch (o1) {
-        case 0xcb:    // CB xx
+        case 0xcb: // CB xx
             o2 = bus.peekb(address++);
             currentMnemonic = mnem1(o2);
             break;
-        case 0xdd:    // DD xx
-        case 0xfd:    // FD xx
+        case 0xdd: // DD xx
+        case 0xfd: // FD xx
             id = (o1 == 0xdd) ? "IX" : "IY";
             o2 = bus.peekb(address++);
             switch (o2) {
-            case 0x21:    // 21: ld ID,nn
+            case 0x21: // 21: ld ID,nn
                 o3 = bus.peekb(address++);
                 o4 = bus.peekb(address++);
                 ad = (o4 << 8) + o3;
                 currentMnemonic = MessageFormat.format(mnem2(o2), id, toHex4(ad));
                 break;
-            case 0x22:    // 34: ld (nn),ID
+            case 0x22: // 34: ld (nn),ID
                 o3 = bus.peekb(address++);
                 o4 = bus.peekb(address++);
                 ad = (o4 << 8) + o3;
                 currentMnemonic = MessageFormat.format(mnem2(o2), toHex4(ad), id);
                 currentComment = toName(ad);
                 break;
-            case 0x29:    // 41: add ID,ID
+            case 0x29: // 41: add ID,ID
                 currentMnemonic = MessageFormat.format(mnem2(o2), id, id);
                 break;
-            case 0x2a:    // 42: ld ID,(nn)
+            case 0x2a: // 42: ld ID,(nn)
                 o3 = bus.peekb(address++);
                 o4 = bus.peekb(address++);
                 ad = (o4 << 8) + o3;
                 currentMnemonic = MessageFormat.format(mnem2(o2), id, toHex4(ad));
                 currentComment = toName(ad);
                 break;
-            case 0x36:    // 54: foo (ID + d), n
-                o3 = bus.peekb(address++);        // d
-                o4 = bus.peekb(address++);        // n
+            case 0x36: // 54: foo (ID + d), n
+                o3 = bus.peekb(address++); // d
+                o4 = bus.peekb(address++); // n
                 currentMnemonic = MessageFormat.format(mnem2(o2), id, toHex2(o3), toHex2(o4));
                 break;
-            case 0xcb:    // ID cb d xx
-                o3 = bus.peekb(address++);        // d
-                o4 = bus.peekb(address++);        // xx
+            case 0xcb: // ID cb d xx
+                o3 = bus.peekb(address++); // d
+                o4 = bus.peekb(address++); // xx
                 currentMnemonic = MessageFormat.format(mnem3(o4), id, toHex2(o3));
                 break;
             default:
@@ -113,7 +113,7 @@ class Disassembler implements Device {
                 case 2:
                     currentMnemonic = MessageFormat.format(mnem2(o2), id);
                     break;
-                case 3:    // ID + d
+                case 3: // ID + d
                     o3 = bus.peekb(address++);
                     currentMnemonic = MessageFormat.format(mnem2(o2), id, toHex2(o3));
                     break;
@@ -121,7 +121,7 @@ class Disassembler implements Device {
                 break;
             }
             break;
-        case 0xed:    // ED xx
+        case 0xed: // ED xx
             o2 = bus.peekb(address++);
             switch (type4(o2)) {
             case 2:
@@ -136,7 +136,7 @@ class Disassembler implements Device {
                 break;
             }
             break;
-        default:    // base 0x00 ~ 0xff
+        default: // base 0x00 ~ 0xff
             switch (type(o1)) {
             case 1:
                 currentMnemonic = mnem(o1);
@@ -145,17 +145,17 @@ class Disassembler implements Device {
                 o2 = bus.peekb(address++);
                 currentMnemonic = MessageFormat.format(mnem(o1), toHex2(o2));
                 break;
-            case 202:    // jr, djnz
+            case 202: // jr, djnz
                 o2 = bus.peekb(address++);
                 currentMnemonic = MessageFormat.format(mnem(o1), toHex2(o2));
                 currentComment = toHex4(address + (byte) o2);
                 break;
-            case 302:    // in a,n
+            case 302: // in a,n
                 o2 = bus.peekb(address++);
                 currentMnemonic = MessageFormat.format(mnem(o1), toHex2(o2));
                 currentComment = toNameI(o2);
                 break;
-            case 402:    // out n,a
+            case 402: // out n,a
                 o2 = bus.peekb(address++);
                 currentMnemonic = MessageFormat.format(mnem(o1), toHex2(o2));
                 currentComment = toNameO(o2);
@@ -183,13 +183,13 @@ if (currentMnemonic == null) {
     }
 
     /** */
-    private final String toHex2(int value) { return StringUtil.toHex2(value); }
+    private static String toHex2(int value) { return String.format("%02x", value); }
     /** */
-    private final String toHex4(int value) { return StringUtil.toHex4(value); }
+    private static String toHex4(int value) { return String.format("%04x", value); }
 
     /** */
-    private final String toName(int value) {
-        String key = StringUtil.toHex4(value);
+    private static String toName(int value) {
+        String key = toHex4(value);
         if (names.containsKey(key)) {
             return names.getProperty(key);
         } else {
@@ -198,8 +198,8 @@ if (currentMnemonic == null) {
     }
 
     /** */
-    private final String toNameI(int value) {
-        String key = StringUtil.toHex2(value);
+    private static String toNameI(int value) {
+        String key = toHex2(value);
         if (inportNames.containsKey(key)) {
             return inportNames.getProperty(key);
         } else {
@@ -208,8 +208,8 @@ if (currentMnemonic == null) {
     }
 
     /** */
-    private final String toNameO(int value) {
-        String key = StringUtil.toHex2(value);
+    private static String toNameO(int value) {
+        String key = toHex2(value);
         if (outportNames.containsKey(key)) {
             return outportNames.getProperty(key);
         } else {
@@ -218,20 +218,20 @@ if (currentMnemonic == null) {
     }
 
     /** */
-    private final String mnem1(int p) { return table_cb[p].mnemonic; }
-    private final String mnem2(int p) { return table_ID[p].mnemonic; }
-    private final String mnem3(int p) { return table_IDcb[p].mnemonic; }
-    private final String mnem4(int p) { return table_ed[p].mnemonic; }
-    private final String mnem(int p) { return table_base[p].mnemonic; }
-    private final int type(int p) { return table_base[p].type; }
+    private static String mnem1(int p) { return table_cb[p].mnemonic; }
+    private static String mnem2(int p) { return table_ID[p].mnemonic; }
+    private static String mnem3(int p) { return table_IDcb[p].mnemonic; }
+    private static String mnem4(int p) { return table_ed[p].mnemonic; }
+    private static String mnem(int p) { return table_base[p].mnemonic; }
+    private static int type(int p) { return table_base[p].type; }
     /** CB xx */
-//  private final int type1(int p) { return table_cb[p].type; }
+    private static int type1(int p) { return table_cb[p].type; }
     /** DD/FD xx */
-    private final int type2(int p) { return table_ID[p].type; }
+    private static int type2(int p) { return table_ID[p].type; }
     /** DD/FD CB xx */
-//  private final int type3(int p) { return table_IDcb[p].type; }
+    private static int type3(int p) { return table_IDcb[p].type; }
     /** ED xx */
-    private final int type4(int p) { return table_ed[p].type; }
+    private static int type4(int p) { return table_ed[p].type; }
 
     /** */
     private static class Entry {
@@ -267,7 +267,7 @@ if (currentMnemonic == null) {
     /** */
     private static Properties inportNames = new Properties();
 
-    /** */
+    /* load properties */
     static {
         try {
             Class<?> clazz = Debugger.class;
@@ -322,34 +322,26 @@ Debug.printStackTrace(e);
 
         Entry entry = new Entry(type, length, mnemonic);
         table[i] = entry;
-//  } catch (RuntimeException e) {
-//   Debug.println(key);
-//   throw e;
-//  }
+//} catch (RuntimeException e) {
+// Debug.println(key);
+// throw e;
+//}
     }
 
-    /** */
+    /**
+     * run disassembler
+     *
+     * @param args 0: file, 1: start address, 2: bytes, 3: offset
+     */
     public static void main(String[] args) throws IOException {
-        final byte[] ram = new byte[0x10000];
-        Bus bus = new Bus() {
-            protected Mapping getMapping(int a, Direction direction) {
-                Mapping address = new Mapping();
-                address.base = ram;
-                address.pointer = a;
-                return address;
-            }
-            public int inp(int p) { return -1; }
-            public void outp(int p, int d) {}
-        };
+        Bus bus = new Bus.SimpleBus();
 
-        File file = new File(args[0]);
-        int length = (int) file.length();
-        InputStream is = new FileInputStream(file);
-        int l = 0;
-        while (l < length) {
-            l += is.read(ram, l, length - l);
+        int offset = 0;
+        if (args.length > 3) {
+            offset = Integer.parseInt(args[3], 16);
         }
-        is.close();
+
+        Path file = Paths.get(args[0]);
 
         int start = 0;
         if (args.length > 1) {
@@ -360,17 +352,20 @@ Debug.printStackTrace(e);
             bytes = Integer.parseInt(args[2], 16);
         }
 
+        byte[] data = Files.readAllBytes(file);
+        bus.pokes(start, Arrays.copyOfRange(data, offset, offset + bytes));
+
         Disassembler da = new Disassembler();
         da.setBus(bus);
-Debug.println(StringUtil.toHex4(start) + ", " + StringUtil.toHex8(bytes));
+Debug.printf("%04x, %08x", start, bytes);
         int pc = start;
         while (pc - start < bytes) {
             int next = da.execute(pc);
 
-            System.out.print(StringUtil.toHex4(pc) + " ");
+            System.out.printf("%04x ", pc);
             for (int i = 0; i < 4; i++) {
                 if (i < next - pc) {
-                    System.out.print(StringUtil.toHex2(bus.peekb(pc + i)));
+                    System.out.printf("%02x", bus.peekb(pc + i));
                 } else {
                     System.out.print("  ");
                 }
