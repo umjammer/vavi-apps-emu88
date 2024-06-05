@@ -82,7 +82,7 @@ class CRTC implements Device {
                 boolean c_b = (data & 0x80) != 0;
                 int h = data & 0x7f;
 if (h + 2 > 80) {
- Debug.println("h > 80");
+ //logger.log(Level.DEBUG, "h > 80");
 }
                 sf = 1;
                 break;
@@ -145,5 +145,3 @@ if (h + 2 > 80) {
         return data;
     }
 }
-
-/* */

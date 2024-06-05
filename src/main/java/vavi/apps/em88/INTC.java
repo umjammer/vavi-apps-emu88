@@ -50,7 +50,7 @@ class INTC implements Device {
     public void setRegister(int data) {
         this.sgs_ = (data & 0x08) != 0;
         this.level = data & 0x07;
-        // Debug.println("sgs_: " + sgs_ + ", level: " + level);
+        //logger.log(Level.TRACE, "sgs_: " + sgs_ + ", level: " + level);
     }
 
     /** */
@@ -73,7 +73,7 @@ class INTC implements Device {
         } else {
             mask |= (0x01 << 0);
         }
-        // Debug.println("mask: " + StringUtil.toHex2(mask) + " " + StringUtil.toBits(mask));
+//logger.log(Level.TRACE, "mask: %02x".formatted(mask, StringUtil.toBits(mask)));
     }
 
     /** */
@@ -88,13 +88,13 @@ class INTC implements Device {
             return;
         }
 
-        if (sgs_) { // 優先順位のみによる割り込み発生
+        if (sgs_) { // Interrupts occur based on priority only
             for (int i = 0; i < channel; i++) {
                 if ((irff & (0x01 << i)) == 0) {
                     return;
                 }
             }
-        } else { // インタラプトレベルと比較し割り込み発生
+        } else { // Compare with interrupt level and generate interrupt
             if (channel > level) {
                 return;
             }
@@ -157,5 +157,3 @@ class INTC implements Device {
         }
     }
 }
-
-/* */

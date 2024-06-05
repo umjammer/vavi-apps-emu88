@@ -29,7 +29,7 @@ class LD_arr_r_tests extends InstructionsExecutionTestsBase {
         );
     }
 
-    @Disabled("infinit loop")
+    @Disabled("infinite loop")
     @ParameterizedTest
     @MethodSource("LD_rr_r_Source")
     public void LD_arr_r_loads_value_in_memory(String destPointerReg, String srcReg, byte opcode) {

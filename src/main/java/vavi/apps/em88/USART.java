@@ -59,5 +59,3 @@ class USART implements Device {
     public void setData(int data) {
     }
 }
-
-/* */

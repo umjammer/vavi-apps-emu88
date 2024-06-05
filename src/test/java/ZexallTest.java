@@ -1,46 +1,46 @@
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
+import vavi.apps.em88.SimpleBus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import vavi.apps.em88.Bus;
 import vavi.apps.em88.Z80;
 
 
 /**
- * Test2.
+ * ZexallTest.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-06-27 nsano initial version <br>
  */
-public class Test2 {
+public class ZexallTest {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "zexall")
     void testZExeAll() throws Exception {
-        byte[] program = Files.readAllBytes(Paths.get("src/test/resources/zexall.com"));
+        byte[] program = Files.readAllBytes(Path.of(ZexallTest.class.getResource("/zexall.com").toURI()));
         exec(program, 0);
     }
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "zexdoc")
     void testZExeDoc() throws Exception {
-        byte[] program = Files.readAllBytes(Paths.get("src/test/resources/zexdoc.com"));
+        byte[] program = Files.readAllBytes(Path.of(ZexallTest.class.getResource("/zexdoc.com").toURI()));
         exec(program, 0);
     }
 
     public static void exec(byte[] program, int testsToSkip) {
         Z80 z80 = new Z80();
-        z80.setBus(new Bus.SimpleBus());
+        z80.setBus(new SimpleBus());
 
         z80.getBus().pokes(0x100, program, 0, program.length);
 
-        z80.getBus().pokeb(6, 0xFF);
-        z80.getBus().pokeb(7, 0xFF);
+        z80.getBus().pokeb(6, 0xff);
+        z80.getBus().pokeb(7, 0xff);
 
-        z80.addListener(Test2::z80OnBeforeInstructionFetch);
+        z80.addListener(ZexallTest::z80OnBeforeInstructionFetch);
 
         skipTests(z80, testsToSkip);
 
@@ -53,7 +53,7 @@ public class Test2 {
 
     private static void skipTests(Z80 z80, int testsToSkipCount) {
         int loadTestsAddress = 0x120;
-        int originalAddress = 0x13A;
+        int originalAddress = 0x13a;
         int newTestAddress = originalAddress + testsToSkipCount * 2;
         z80.getBus().pokew(loadTestsAddress, newTestAddress);
     }
@@ -79,7 +79,7 @@ public class Test2 {
                 messageAddress++;
             }
 
-            String StringToPrint = new String(bytesToPrint.toByteArray(), StandardCharsets.US_ASCII);
+            String StringToPrint = bytesToPrint.toString(StandardCharsets.US_ASCII);
             System.err.print(StringToPrint);
         } else if (function == 2) {
             int byteToPrint = z80.getE();

@@ -8,10 +8,14 @@ package vavi.apps.em88;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Properties;
 import java.util.function.Consumer;
 
 import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -24,6 +28,8 @@ import vavi.util.Debug;
  *          1.10 040101 nsano see jasper Z80 <br>
  */
 public class Z80 implements Device {
+
+    private static final Logger logger = getLogger(Z80.class.getName());
 
     // Z80 register emulation
 
@@ -682,9 +688,9 @@ public class Z80 implements Device {
 private void debug1() {
     String key = String.format("%04x", bus.peekw(pc - 2));
     if (names.containsKey(key)) {
-        Debug.println("call: " + key + ":" + names.getProperty(key));
+        //logger.log(Level.DEBUG, "call: " + key + ":" + names.getProperty(key));
     } else {
-        Debug.println("push: " + key + ": ???");
+        //logger.log(Level.DEBUG, "push: " + key + ": ???");
     }
 }
 
@@ -742,9 +748,9 @@ private void debug1() {
             push(pc);
             iff1 = false;
             iff2 = false;
-// Debug.println("pc: " + StringUtil.toHex4(pc));
+//logger.log(Level.TRACE, "pc: " + StringUtil.toHex4(pc));
             pc = bus.peekw((i << 8) | intc.getOffsetAddress());
-// Debug.println("pc: " + StringUtil.toHex4(pc) + ", " +
+//logger.log(Level.TRACE, "pc: " + StringUtil.toHex4(pc) + ", " +
 // StringUtil.toHex4((i << 8) | intc.getOffsetAddress()));
             cost = 19;
             break;
@@ -1076,12 +1082,12 @@ private void debug1() {
     }
 
     /** set bit */
-    private int setBit(int n, int o) {
+    private static int setBit(int n, int o) {
         return o | bit_tbl[n];
     }
 
     /** reset bit */
-    private int resetBit(int n, int o) {
+    private static int resetBit(int n, int o) {
         return o & ~bit_tbl[n];
     }
 
@@ -1116,1289 +1122,1214 @@ private void debug1() {
         r = inc7Bits(r);
 
         switch (o) {
-        case 0x40: // ld b,b
-//          b = b;
-            cost = 4;
-            break;
-        case 0x41: // ld b,c
-            b = c;
-            cost = 4;
-            break;
-        case 0x42: // ld b,d
-            b = d;
-            cost = 4;
-            break;
-        case 0x43: // ld b,e
-            b = e;
-            cost = 4;
-            break;
-        case 0x44: // ld b,h
-            b = getH();
-            cost = 4;
-            break;
-        case 0x45: // ld b,l
-            b = getL();
-            cost = 4;
-            break;
-        case 0x47: // ld b,a
-            b = a;
-            cost = 4;
-            break;
-        case 0x48: // ld c,b
-            c = b;
-            cost = 4;
-            break;
-        case 0x49: // ld c,c
-//          c = c;
-            cost = 4;
-            break;
-        case 0x4a: // ld c,d
-            c = d;
-            cost = 4;
-            break;
-        case 0x4b: // ld c,e
-            c = e;
-            cost = 4;
-            break;
-        case 0x4c: // ld c,h
-            c = getH();
-            cost = 4;
-            break;
-        case 0x4d: // ld c,l
-            c = getL();
-            cost = 4;
-            break;
-        case 0x4f: // ld c,a
-            c = a;
-            cost = 4;
-            break;
-        case 0x50: // ld d,b
-            d = b;
-            cost = 4;
-            break;
-        case 0x51: // ld d,c
-            d = c;
-            cost = 4;
-            break;
-        case 0x52: // ld d,d
-//          d = d;
-            cost = 4;
-            break;
-        case 0x53: // ld d,e
-            d = e;
-            cost = 4;
-            break;
-        case 0x54: // ld d,h
-            d = getH();
-            cost = 4;
-            break;
-        case 0x55: // ld d,l
-            d = getL();
-            cost = 4;
-            break;
-        case 0x57: // ld d,a
-            d = a;
-            cost = 4;
-            break;
-        case 0x58: // ld e,b
-            e = b;
-            cost = 4;
-            break;
-        case 0x59: // ld e,c
-            e = c;
-            cost = 4;
-            break;
-        case 0x5a: // ld e,d
-            e = d;
-            cost = 4;
-            break;
-        case 0x5b: // ld e,e
-//          e = e;
-            cost = 4;
-            break;
-        case 0x5c: // ld e,h
-            e = getH();
-            cost = 4;
-            break;
-        case 0x5d: // ld e,l
-            e = getL();
-            cost = 4;
-            break;
-        case 0x5f: // ld e,a
-            e = a;
-            cost = 4;
-            break;
-        case 0x60: // ld h,b
-            setH(b);
-            cost = 4;
-            break;
-        case 0x61: // ld h,c
-            setH(c);
-            cost = 4;
-            break;
-        case 0x62: // ld h,d
-            setH(d);
-            cost = 4;
-            break;
-        case 0x63: // ld h,e
-            setH(e);
-            cost = 4;
-            break;
-        case 0x64: // ld h,h
-//          setH(h)
-            cost = 4;
-            break;
-        case 0x65: // ld h,l
-            setH(getL());
-            cost = 4;
-            break;
-        case 0x67: // ld h,a
-            setH(a);
-            cost = 4;
-            break;
-        case 0x68: // ld l,b
-            setL(b);
-            cost = 4;
-            break;
-        case 0x69: // ld l,c
-            setL(c);
-            cost = 4;
-            break;
-        case 0x6a: // ld l,d
-            setL(d);
-            cost = 4;
-            break;
-        case 0x6b: // ld l,e
-            setL(e);
-            cost = 4;
-            break;
-        case 0x6c: // ld l,h
-            setL(getH());
-            cost = 4;
-            break;
-        case 0x6d: // ld l,l
-//          setL(getL());
-            cost = 4;
-            break;
-        case 0x6f: // ld l,a
-            setL(a);
-            cost = 4;
-            break;
-        case 0x78: // ld a,b
-            a = b;
-            cost = 4;
-            break;
-        case 0x79: // ld a,c
-            a = c;
-            cost = 4;
-            break;
-        case 0x7a: // ld a,d
-            a = d;
-            cost = 4;
-            break;
-        case 0x7b: // ld a,e
-            a = e;
-            cost = 4;
-            break;
-        case 0x7c: // ld a,h
-            a = getH();
-            cost = 4;
-            break;
-        case 0x7d: // ld a,l
-            a = getL();
-            cost = 4;
-            break;
-        case 0x7f: // ld a,a
-//          a = a;
-            cost = 4;
-            break;
-
-        case 0x77: // ld (hl),a
-            bus.pokeb(hl, a);
-            cost = 7;
-            break;
-        case 0x70: // ld (hl),b
-            bus.pokeb(hl, b);
-            cost = 7;
-            break;
-        case 0x71: // ld (hl),c
-            bus.pokeb(hl, c);
-            cost = 7;
-            break;
-        case 0x72: // ld (hl),d
-            bus.pokeb(hl, d);
-            cost = 7;
-            break;
-        case 0x73: // ld (hl),e
-            bus.pokeb(hl, e);
-            cost = 7;
-            break;
-        case 0x74: // ld (hl),h
-            bus.pokeb(hl, getH());
-            cost = 7;
-            break;
-        case 0x75: // ld (hl),l
-            bus.pokeb(hl, getL());
-            cost = 7;
-            break;
-
-        case 0x7e: // ld a,(hl)
-            a = bus.peekb(hl);
-            cost = 7;
-            break;
-        case 0x46: // ld b,(hl)
-            b = bus.peekb(hl);
-            cost = 7;
-            break;
-        case 0x4e: // ld c,(hl)
-            c = bus.peekb(hl);
-            cost = 7;
-            break;
-        case 0x56: // ld d,(hl)
-            d = bus.peekb(hl);
-            cost = 7;
-            break;
-        case 0x5e: // ld e,(hl)
-            e = bus.peekb(hl);
-            cost = 7;
-            break;
-        case 0x66: // ld h,(hl)
-            setH(bus.peekb(hl));
-            cost = 7;
-            break;
-        case 0x6e: // ld l,(hl)
-            setL(bus.peekb(hl));
-            cost = 7;
-            break;
-
-        case 0x3e: // ld a,n
-            a = fetchB();
-            cost = 7;
-            break;
-        case 0x06: // ld b,n
-            b = fetchB();
-            cost = 7;
-            break;
-        case 0x0e: // ld c,n
-            c = fetchB();
-            cost = 7;
-            break;
-        case 0x16: // ld d,n
-            d = fetchB();
-            cost = 7;
-            break;
-        case 0x1e: // ld e,n
-            e = fetchB();
-            cost = 7;
-            break;
-        case 0x26: // ld h,n
-            setH(fetchB());
-            cost = 7;
-            break;
-        case 0x2e: // ld l,n
-            setL(fetchB());
-            cost = 7;
-            break;
-
-        case 0x36: // ld (hl),n
-            bus.pokeb(hl, fetchB());
-            cost = 10;
-            break;
-        case 0x01: // ld bc,nn
-            setBC(fetchW());
-            cost = 10;
-            break;
-        case 0x11: // ld de,nn
-            setDE(fetchW());
-            cost = 10;
-            break;
-        case 0x21: // ld hl,nn
-            setHL(fetchW());
-            cost = 10;
-            break;
-        case 0x31: // ld sp,nn
-            sp = fetchW();
-            cost = 10;
-            break;
-
-        case 0x02: // ld (bc),a
-            bus.pokeb(getBC(), a);
-            cost = 7;
-            break;
-        case 0x12: // ld (de),a
-            bus.pokeb(getDE(), a);
-            cost = 7;
-            break;
-        case 0x0a: // ld a,(bc)
-            a = bus.peekb(getBC());
-            cost = 7;
-            break;
-        case 0x1a: // ld a,(de)
-            a = bus.peekb(getDE());
-            cost = 7;
-            break;
-
-        case 0x22: // ld (nn),hl
-            bus.pokew(fetchW(), hl);
-            cost = 16;
-            break;
-        case 0x2a: // ld hl,(nn)
-            setHL(bus.peekw(fetchW()));
-            cost = 16;
-            break;
-
-        case 0x32: // ld (nn),a
-            bus.pokeb(fetchW(), a);
-            cost = 13;
-            break;
-        case 0x3a: // ld a,(nn)
-            a = bus.peekb(fetchW());
-            cost = 13;
-            break;
-
-        case 0xe3: { // ex (sp),hl
-            int t = bus.peekw(sp);
-            bus.pokew(sp, hl);
-            hl = t;
-            cost = 19;
-        }
-            break;
-        case 0xeb: { // ex de,hl
-            int t = getDE();
-            setDE(hl);
-            hl = t;
-            cost = 4;
-        }
-            break;
-
-        case 0xf9: // ld sp,hl
-            sp = hl;
-            cost = 6;
-            break;
-        case 0xe9: // jp (hl)
-            pc = hl;
-            cost = 4;
-            break;
-
-        case 0x3c: // inc a
-            a = inc8bit(a);
-            cost = 4;
-            break;
-        case 0x04: // inc b
-            b = inc8bit(b);
-            cost = 4;
-            break;
-        case 0x0c: // inc c
-            c = inc8bit(c);
-            cost = 4;
-            break;
-        case 0x14: // inc d
-            d = inc8bit(d);
-            cost = 4;
-            break;
-        case 0x1c: // inc e
-            e = inc8bit(e);
-            cost = 4;
-            break;
-        case 0x24: // inc h
-            setH(inc8bit(getH()));
-            cost = 4;
-            break;
-        case 0x2c: // inc l
-            setL(inc8bit(getL()));
-            cost = 4;
-            break;
-        case 0x34: // inc (hl)
-            bus.pokeb(hl, inc8bit(bus.peekb(hl)));
-            cost = 11;
-            break;
-
-        case 0x3d: // dec a
-            a = dec8bit(a);
-            cost = 4;
-            break;
-        case 0x05: // dec b
-            b = dec8bit(b);
-            cost = 4;
-            break;
-        case 0x0d: // dec c
-            c = dec8bit(c);
-            cost = 4;
-            break;
-        case 0x15: // dec d
-            d = dec8bit(d);
-            cost = 4;
-            break;
-        case 0x1d: // dec e
-            e = dec8bit(e);
-            cost = 4;
-            break;
-        case 0x25: // dec h
-            setH(dec8bit(getH()));
-            cost = 4;
-            break;
-        case 0x2d: // dec l
-            setL(dec8bit(getL()));
-            cost = 4;
-            break;
-        case 0x35: // dec (hl)
-            bus.pokeb(hl, dec8bit(bus.peekb(hl)));
-            cost = 11;
-            break;
-
-        case 0x03: // inc bc
-            setBC(getBC() + 1);
-            cost = 6;
-            break;
-        case 0x13: // inc de
-            setDE(getDE() + 1);
-            cost = 6;
-            break;
-        case 0x23: // inc hl
-            hl += 1;
-            cost = 6;
-            break;
-        case 0x33: // inc sp
-            sp = inc16bitInternal(sp);
-            cost = 6;
-            break;
-        case 0x0b: // dec bc
-            setBC(getBC() - 1);
-            cost = 6;
-            break;
-        case 0x1b: // dec de
-            setDE(getDE() - 1);
-            cost = 6;
-            break;
-        case 0x2b: // dec hl
-            hl -= 1;
-            cost = 6;
-            break;
-        case 0x3b: // dec sp
-            sp = sub16bitInternal(sp, 1);
-            cost = 6;
-            break;
-
-        case 0x87: // add a,a
-            a = add8bit(a, a);
-            cost = 4;
-            break;
-        case 0x80: // add a,b
-            a = add8bit(a, b);
-            cost = 4;
-            break;
-        case 0x81: // add a,c
-            a = add8bit(a, c);
-            cost = 4;
-            break;
-        case 0x82: // add a,d
-            a = add8bit(a, d);
-            cost = 4;
-            break;
-        case 0x83: // add a,e
-            a = add8bit(a, e);
-            cost = 4;
-            break;
-        case 0x84: // add a,h
-            a = add8bit(a, getH());
-            cost = 4;
-            break;
-        case 0x85: // add a,l
-            a = add8bit(a, getL());
-            cost = 4;
-            break;
-        case 0x86: // add a,(hl)
-            a = add8bit(a, bus.peekb(hl));
-            cost = 7;
-            break;
-
-        case 0x8f: // adc a,a
-            a = adc8bit(a, a);
-            cost = 4;
-            break;
-        case 0x88: // adc a,b
-            a = adc8bit(a, b);
-            cost = 4;
-            break;
-        case 0x89: // adc a,c
-            a = adc8bit(a, c);
-            cost = 4;
-            break;
-        case 0x8a: // adc a,d
-            a = adc8bit(a, d);
-            cost = 4;
-            break;
-        case 0x8b: // adc a,e
-            a = adc8bit(a, e);
-            cost = 4;
-            break;
-        case 0x8c: // adc a,h
-            a = adc8bit(a, getH());
-            cost = 4;
-            break;
-        case 0x8d: // adc a,l
-            a = adc8bit(a, getL());
-            cost = 4;
-            break;
-        case 0x8e: // adc a,(hl)
-            a = adc8bit(a, bus.peekb(hl));
-            cost = 7;
-            break;
-
-        case 0x97: // sub a
-            a = sub8bit(a, a);
-            cost = 4;
-            break;
-        case 0x90: // sub b
-            a = sub8bit(a, b);
-            cost = 4;
-            break;
-        case 0x91: // sub c
-            a = sub8bit(a, c);
-            cost = 4;
-            break;
-        case 0x92: // sub d
-            a = sub8bit(a, d);
-            cost = 4;
-            break;
-        case 0x93: // sub e
-            a = sub8bit(a, e);
-            cost = 4;
-            break;
-        case 0x94: // sub h
-            a = sub8bit(a, getH());
-            cost = 4;
-            break;
-        case 0x95: // sub l
-            a = sub8bit(a, getL());
-            cost = 4;
-            break;
-        case 0x96: // sub (hl)
-            a = sub8bit(a, bus.peekb(hl));
-            cost = 7;
-            break;
-
-        case 0x9f: // sbc a,a
-            a = sbc8bit(a, a);
-            cost = 4;
-            break;
-        case 0x98: // sbc a,b
-            a = sbc8bit(a, b);
-            cost = 4;
-            break;
-        case 0x99: // sbc a,c
-            a = sbc8bit(a, c);
-            cost = 4;
-            break;
-        case 0x9a: // sbc a,d
-            a = sbc8bit(a, d);
-            cost = 4;
-            break;
-        case 0x9b: // sbc a,e
-            a = sbc8bit(a, e);
-            cost = 4;
-            break;
-        case 0x9c: // sbc a,h
-            a = sbc8bit(a, getH());
-            cost = 4;
-            break;
-        case 0x9d: // sbc a,l
-            a = sbc8bit(a, getL());
-            cost = 4;
-            break;
-        case 0x9e: // sbc a,(hl)
-            a = sbc8bit(a, bus.peekb(hl));
-            cost = 7;
-            break;
-
-        case 0xbf: // cp a
-            cmp8bit(a, a);
-            cost = 4;
-            break;
-        case 0xb8: // cp b
-            cmp8bit(a, b);
-            cost = 4;
-            break;
-        case 0xb9: // cp c
-            cmp8bit(a, c);
-            cost = 4;
-            break;
-        case 0xba: // cp d
-            cmp8bit(a, d);
-            cost = 4;
-            break;
-        case 0xbb: // cp e
-            cmp8bit(a, e);
-            cost = 4;
-            break;
-        case 0xbc: // cp h
-            cmp8bit(a, getH());
-            cost = 4;
-            break;
-        case 0xbd: // cp l
-            cmp8bit(a, getL());
-            cost = 4;
-            break;
-        case 0xbe: // cp (hl)
-            cmp8bit(a, bus.peekb(hl));
-            cost = 7;
-            break;
-
-        case 0xa7: // and a
-            a = and8bit(a, a);
-            cost = 4;
-            break;
-        case 0xa0: // and b
-            a = and8bit(a, b);
-            cost = 4;
-            break;
-        case 0xa1: // and c
-            a = and8bit(a, c);
-            cost = 4;
-            break;
-        case 0xa2: // and d
-            a = and8bit(a, d);
-            cost = 4;
-            break;
-        case 0xa3: // and e
-            a = and8bit(a, e);
-            cost = 4;
-            break;
-        case 0xa4: // and h
-            a = and8bit(a, getH());
-            cost = 4;
-            break;
-        case 0xa5: // and l
-            a = and8bit(a, getL());
-            cost = 4;
-            break;
-        case 0xa6: // and (hl)
-            a = and8bit(a, bus.peekb(hl));
-            cost = 7;
-            break;
-
-        case 0xaf: // xor a
-            a = xor8bit(a, a);
-            cost = 4;
-            break;
-        case 0xa8: // xor b
-            a = xor8bit(a, b);
-            cost = 4;
-            break;
-        case 0xa9: // xor c
-            a = xor8bit(a, c);
-            cost = 4;
-            break;
-        case 0xaa: // xor d
-            a = xor8bit(a, d);
-            cost = 4;
-            break;
-        case 0xab: // xor e
-            a = xor8bit(a, e);
-            cost = 4;
-            break;
-        case 0xac: // xor h
-            a = xor8bit(a, getH());
-            cost = 4;
-            break;
-        case 0xad: // xor l
-            a = xor8bit(a, getL());
-            cost = 4;
-            break;
-        case 0xae: // xor (hl)
-            a = xor8bit(a, bus.peekb(hl));
-            cost = 7;
-            break;
-
-        case 0xb7: // or a
-            a = or8bit(a, a);
-            cost = 4;
-            break;
-        case 0xb0: // or b
-            a = or8bit(a, b);
-            cost = 4;
-            break;
-        case 0xb1: // or c
-            a = or8bit(a, c);
-            cost = 4;
-            break;
-        case 0xb2: // or d
-            a = or8bit(a, d);
-            cost = 4;
-            break;
-        case 0xb3: // or e
-            a = or8bit(a, e);
-            cost = 4;
-            break;
-        case 0xb4: // or h
-            a = or8bit(a, getH());
-            cost = 4;
-            break;
-        case 0xb5: // or l
-            a = or8bit(a, getL());
-            cost = 4;
-            break;
-        case 0xb6: // or (hl)
-            a = or8bit(a, bus.peekb(hl));
-            cost = 7;
-            break;
-
-        case 0xc6: // add a,n
-            a = add8bit(a, fetchB());
-            cost = 7;
-            break;
-        case 0xce: // adc a,n
-            a = adc8bit(a, fetchB());
-            cost = 7;
-            break;
-        case 0xd6: // sub n
-            a = sub8bit(a, fetchB());
-            cost = 7;
-            break;
-        case 0xde: // sbc a,n
-            a = sbc8bit(a, fetchB());
-            cost = 7;
-            break;
-        case 0xe6: // and n
-            a = and8bit(a, fetchB());
-            cost = 7;
-            break;
-        case 0xee: // xor n
-            a = xor8bit(a, fetchB());
-            cost = 7;
-            break;
-        case 0xf6: // or a,n
-            a = or8bit(a, fetchB());
-            cost = 7;
-            break;
-        case 0xfe: // cp a,n
-            cmp8bit(a, fetchB());
-            cost = 7;
-            break;
-
-        case 0x09: // add hl,bc
-            hl = add16bit(hl, getBC());
-            cost = 11;
-            break;
-        case 0x19: // add hl,de
-            hl = add16bit(hl, getDE());
-            cost = 11;
-            break;
-        case 0x29: // add hl,hl
-            hl = add16bit(hl, hl);
-            cost = 11;
-            break;
-        case 0x39: // add hl,sp
-            hl = add16bit(hl, sp);
-            cost = 11;
-            break;
-
-        case 0x27: { // daa
-            int v = a;
-            if (((v & 0x0f) > 9) || fh) {
-                a = add8bitInternal(a, fn ? -6 : 6);
+            case 0x40 -> { // ld b,b
+//                b = b;
+                cost = 4;
             }
-            if ((v > 0x99) || fc) {
-                a = add8bitInternal(a, fn ? -0x60 : 0x60);
+            case 0x41 -> {
+                b = c;
+                cost = 4;
             }
-
-            fc = fc | (v > 0x99);
-            fh = ((v ^ a) & 0x10) != 0;
-            fp = isParity(a);
-            fz = isZero(a);
-            fs = isSign(a);
-
-            cost = 4;
-        }
-            break;
-        case 0x2f: // cpl
-            fh = true;
-            fn = true;
-            a ^= 0xff;
-            cost = 4;
-            break;
-        case 0x3f: // ccf
-            fn = false;
-            fh = fc;
-            fc = !fc;
-            cost = 4;
-            break;
-        case 0x37: // scf
-            fh = false;
-            fn = false;
-            fc = true;
-            cost = 4;
-            break;
-
-        case 0x07: // rlca
-            a = rlc(a, false);
-            cost = 4;
-            break;
-        case 0x0f: // rrca
-            a = rrc(a, false);
-            cost = 4;
-            break;
-        case 0x17: // rla
-            a = rl(a, false);
-            cost = 4;
-            break;
-        case 0x1f: // rra
-            a = rr(a, false);
-            cost = 4;
-            break;
-
-        case 0xc3: // jp
-            pc = bus.peekw(pc);
-            cost = 10;
-            break;
-        case 0xda: { // jp c,nn
-            if (fc) {
-                pc = fetchW();
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x42 -> {
+                b = d;
+                cost = 4;
             }
-            cost = 10;
-        }
-            break;
-        case 0xd2: { // jp nc,nn
-            if (!fc) {
-                pc = fetchW();
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x43 -> {
+                b = e;
+                cost = 4;
             }
-            cost = 10;
-        }
-            break;
-        case 0xca: { // jp z,nn
-            if (fz) {
-                pc = fetchW();
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x44 -> {
+                b = getH();
+                cost = 4;
             }
-            cost = 10;
-        }
-            break;
-        case 0xc2: { // jp nz,nn
-            if (!fz) {
-                pc = fetchW();
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x45 -> {
+                b = getL();
+                cost = 4;
             }
-            cost = 10;
-        }
-            break;
-        case 0xea: { // jp pe,nn
-            if (fp) {
-                pc = fetchW();
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x47 -> {
+                b = a;
+                cost = 4;
             }
-            cost = 10;
-        }
-            break;
-        case 0xe2: { // jp po,nn
-            if (!fp) {
-                pc = fetchW();
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x48 -> {
+                c = b;
+                cost = 4;
             }
-            cost = 10;
-        }
-            break;
-        case 0xfa: { // jp m,nn
-            if (fs) {
-                pc = fetchW();
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x49 -> { // ld c,c
+//                c = c;
+                cost = 4;
             }
-            cost = 10;
-        }
-            break;
-        case 0xf2: { // jp p,nn
-            if (!fs) {
-                pc = fetchW();
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x4a -> {
+                c = d;
+                cost = 4;
             }
-            cost = 10;
-        }
-            break;
-
-        case 0xcd: { // call
-            call();
-            cost = 17;
-        }
-            break;
-        case 0xdc: { // call c,nn
-            if (fc) {
-                call();
-                cost = 17;
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x4b -> {
+                c = e;
+                cost = 4;
+            }
+            case 0x4c -> {
+                c = getH();
+                cost = 4;
+            }
+            case 0x4d -> {
+                c = getL();
+                cost = 4;
+            }
+            case 0x4f -> {
+                c = a;
+                cost = 4;
+            }
+            case 0x50 -> {
+                d = b;
+                cost = 4;
+            }
+            case 0x51 -> {
+                d = c;
+                cost = 4;
+            }
+            case 0x52 -> { // ld d,d
+//                d = d;
+                cost = 4;
+            }
+            case 0x53 -> {
+                d = e;
+                cost = 4;
+            }
+            case 0x54 -> {
+                d = getH();
+                cost = 4;
+            }
+            case 0x55 -> {
+                d = getL();
+                cost = 4;
+            }
+            case 0x57 -> {
+                d = a;
+                cost = 4;
+            }
+            case 0x58 -> {
+                e = b;
+                cost = 4;
+            }
+            case 0x59 -> {
+                e = c;
+                cost = 4;
+            }
+            case 0x5a -> {
+                e = d;
+                cost = 4;
+            }
+            case 0x5b -> { // ld e,e
+//                e = e;
+                cost = 4;
+            }
+            case 0x5c -> {
+                e = getH();
+                cost = 4;
+            }
+            case 0x5d -> {
+                e = getL();
+                cost = 4;
+            }
+            case 0x5f -> {
+                e = a;
+                cost = 4;
+            }
+            case 0x60 -> {
+                setH(b);
+                cost = 4;
+            }
+            case 0x61 -> {
+                setH(c);
+                cost = 4;
+            }
+            case 0x62 -> {
+                setH(d);
+                cost = 4;
+            }
+            case 0x63 -> {
+                setH(e);
+                cost = 4;
+            }
+            case 0x64 -> { // ld h,h
+//                setH(h);
+                cost = 4;
+            }
+            case 0x65 -> {
+                setH(getL());
+                cost = 4;
+            }
+            case 0x67 -> {
+                setH(a);
+                cost = 4;
+            }
+            case 0x68 -> {
+                setL(b);
+                cost = 4;
+            }
+            case 0x69 -> {
+                setL(c);
+                cost = 4;
+            }
+            case 0x6a -> {
+                setL(d);
+                cost = 4;
+            }
+            case 0x6b -> {
+                setL(e);
+                cost = 4;
+            }
+            case 0x6c -> {
+                setL(getH());
+                cost = 4;
+            }
+            case 0x6d -> { // ld l,l
+//                setL(getL());
+                cost = 4;
+            }
+            case 0x6f -> {
+                setL(a);
+                cost = 4;
+            }
+            case 0x78 -> {
+                a = b;
+                cost = 4;
+            }
+            case 0x79 -> {
+                a = c;
+                cost = 4;
+            }
+            case 0x7a -> {
+                a = d;
+                cost = 4;
+            }
+            case 0x7b -> {
+                a = e;
+                cost = 4;
+            }
+            case 0x7c -> {
+                a = getH();
+                cost = 4;
+            }
+            case 0x7d -> {
+                a = getL();
+                cost = 4;
+            }
+            case 0x7f -> { // ld a,a
+//                a = a;
+                cost = 4;
+            }
+            case 0x77 -> {
+                bus.pokeb(hl, a);
+                cost = 7;
+            }
+            case 0x70 -> {
+                bus.pokeb(hl, b);
+                cost = 7;
+            }
+            case 0x71 -> {
+                bus.pokeb(hl, c);
+                cost = 7;
+            }
+            case 0x72 -> {
+                bus.pokeb(hl, d);
+                cost = 7;
+            }
+            case 0x73 -> {
+                bus.pokeb(hl, e);
+                cost = 7;
+            }
+            case 0x74 -> {
+                bus.pokeb(hl, getH());
+                cost = 7;
+            }
+            case 0x75 -> {
+                bus.pokeb(hl, getL());
+                cost = 7;
+            }
+            case 0x7e -> {
+                a = bus.peekb(hl);
+                cost = 7;
+            }
+            case 0x46 -> {
+                b = bus.peekb(hl);
+                cost = 7;
+            }
+            case 0x4e -> {
+                c = bus.peekb(hl);
+                cost = 7;
+            }
+            case 0x56 -> {
+                d = bus.peekb(hl);
+                cost = 7;
+            }
+            case 0x5e -> {
+                e = bus.peekb(hl);
+                cost = 7;
+            }
+            case 0x66 -> {
+                setH(bus.peekb(hl));
+                cost = 7;
+            }
+            case 0x6e -> {
+                setL(bus.peekb(hl));
+                cost = 7;
+            }
+            case 0x3e -> {
+                a = fetchB();
+                cost = 7;
+            }
+            case 0x06 -> {
+                b = fetchB();
+                cost = 7;
+            }
+            case 0x0e -> {
+                c = fetchB();
+                cost = 7;
+            }
+            case 0x16 -> {
+                d = fetchB();
+                cost = 7;
+            }
+            case 0x1e -> {
+                e = fetchB();
+                cost = 7;
+            }
+            case 0x26 -> {
+                setH(fetchB());
+                cost = 7;
+            }
+            case 0x2e -> {
+                setL(fetchB());
+                cost = 7;
+            }
+            case 0x36 -> {
+                bus.pokeb(hl, fetchB());
                 cost = 10;
             }
-        }
-            break;
-        case 0xd4: { // call nc,nn
-            if (!fc) {
-                call();
-                cost = 17;
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x01 -> {
+                setBC(fetchW());
                 cost = 10;
             }
-        }
-            break;
-        case 0xcc: { // call z,nn
-            if (fz) {
-                call();
-                cost = 17;
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x11 -> {
+                setDE(fetchW());
                 cost = 10;
             }
-        }
-            break;
-        case 0xc4: { // call nz,nn
-            if (!fz) {
-                call();
-                cost = 17;
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x21 -> {
+                setHL(fetchW());
                 cost = 10;
             }
-        }
-            break;
-        case 0xec: { // call pe,nn
-            if (fp) {
-                call();
-                cost = 17;
-            } else {
-                pc = add16bitInternal(pc, 2);
+            case 0x31 -> {
+                sp = fetchW();
                 cost = 10;
             }
-        }
-            break;
-        case 0xe4: { // call po,nn
-            if (!fp) {
-                call();
-                cost = 17;
-            } else {
-                pc = add16bitInternal(pc, 2);
-                cost = 10;
+            case 0x02 -> {
+                bus.pokeb(getBC(), a);
+                cost = 7;
             }
-        }
-            break;
-        case 0xfc: { // call m,nn
-            if (fs) {
-                call();
-                cost = 17;
-            } else {
-                pc = add16bitInternal(pc, 2);
-                cost = 10;
+            case 0x12 -> {
+                bus.pokeb(getDE(), a);
+                cost = 7;
             }
-        }
-            break;
-        case 0xf4: { // call p,nn
-            if (!fs) {
-                call();
-                cost = 17;
-            } else {
-                pc = add16bitInternal(pc, 2);
-                cost = 10;
+            case 0x0a -> {
+                a = bus.peekb(getBC());
+                cost = 7;
             }
-        }
-            break;
-
-        case 0xc7: // rst 00h
-            push(pc);
-            pc = 0 * 8;
-            cost = 11;
-            break;
-        case 0xcf: // rst 08h
-            push(pc);
-            pc = 1 * 8;
-            cost = 11;
-            break;
-        case 0xd7: // rst 10h
-            push(pc);
-            pc = 2 * 8;
-            cost = 11;
-            break;
-        case 0xdf: // rst 18h
-            push(pc);
-            pc = 3 * 8;
-            cost = 11;
-            break;
-        case 0xe7: // rst 20h
-            push(pc);
-            pc = 4 * 8;
-            cost = 11;
-            break;
-        case 0xef: // rst 28h
-            push(pc);
-            pc = 5 * 8;
-            cost = 11;
-            break;
-        case 0xf7: // rst 30h
-            push(pc);
-            pc = 6 * 8;
-            cost = 11;
-            break;
-        case 0xff: // rst 38h
-            push(pc);
-            pc = 7 * 8;
-            cost = 11;
-            break;
-
-        case 0xc9: // ret
-            pc = pop();
-            cost = 10;
-            break;
-        case 0xd8: // ret c
-            if (fc) {
-                pc = pop();
-                cost = 11;
-            } else {
-                cost = 5;
+            case 0x1a -> {
+                a = bus.peekb(getDE());
+                cost = 7;
             }
-            break;
-        case 0xd0: // ret nc
-            if (!fc) {
-                pc = pop();
-                cost = 11;
-            } else {
-                cost = 5;
+            case 0x22 -> {
+                bus.pokew(fetchW(), hl);
+                cost = 16;
             }
-            break;
-        case 0xc8: // ret z
-            if (fz) {
-                pc = pop();
-                cost = 11;
-            } else {
-                cost = 5;
+            case 0x2a -> {
+                setHL(bus.peekw(fetchW()));
+                cost = 16;
             }
-            break;
-        case 0xc0: // ret nz
-            if (!fz) {
-                pc = pop();
-                cost = 11;
-            } else {
-                cost = 5;
-            }
-            break;
-        case 0xe8: // ret pe
-            if (fp) {
-                pc = pop();
-                cost = 11;
-            } else {
-                cost = 5;
-            }
-            break;
-        case 0xe0: // ret po
-            if (!fp) {
-                pc = pop();
-                cost = 11;
-            } else {
-                cost = 5;
-            }
-            break;
-        case 0xf8: // ret m
-            if (fs) {
-                pc = pop();
-                cost = 11;
-            } else {
-                cost = 5;
-            }
-            break;
-        case 0xf0: // ret p
-            if (!fs) {
-                pc = pop();
-                cost = 11;
-            } else {
-                cost = 5;
-            }
-            break;
-
-        case 0xc5: // push bc
-            push(getBC());
-            cost = 11;
-            break;
-        case 0xd5: // push de
-            push(getDE());
-            cost = 11;
-            break;
-        case 0xe5: // push hl
-            push(hl);
-            cost = 11;
-            break;
-        case 0xf5: // push af
-            push(getAF());
-            cost = 11;
-            break;
-
-        case 0xc1: // pop bc
-            setBC(pop());
-            cost = 10;
-            break;
-        case 0xd1: // pop de
-            setDE(pop());
-            cost = 10;
-            break;
-        case 0xe1: // pop hl
-            hl = pop();
-            cost = 10;
-            break;
-        case 0xf1: // pop af
-            setAF(pop());
-            cost = 10;
-            break;
-
-        case 0xdb: // in a,n
-            a = bus.inp(fetchB());
-            cost = 11;
-            break;
-        case 0xd3: // out n,a
-            bus.outp(fetchB(), a);
-            cost = 11;
-            break;
-
-        case 0xf3: // di
-            iff1 = false;
-            iff2 = false;
-// Debug.println("DI");
-            cost = 4;
-            break;
-        case 0xfb: // ei
-            iff1 = true;
-            iff2 = true;
-// Debug.println("EI");
-            cost = 4;
-            break;
-        case 0x00: // nop
-            cost = 4;
-            break;
-        case 0x76: // halt
-            cost = 4;
-Debug.printf("halt: %4x", dec16bitInternal(pc));
-            while (!broken) {
-//              r = add8bitInternal(xxx); // TODO check
-                Thread.yield();
-            }
-            break;
-
-        /*
-         * Z80 instruction set
-         */
-
-        case 0x08: { // ex af,af'
-            int t = getAF();
-            setAF(af2);
-            af2 = t;
-            cost = 4;
-        }
-            break;
-
-        case 0x10: { // djnz e
-            b = dec8bitInternal(b);
-            if (b != 0) {
-                byte v = (byte) fetchB();
-                pc = add16bitInternal(pc, v);
+            case 0x32 -> {
+                bus.pokeb(fetchW(), a);
                 cost = 13;
-            } else {
-                pc = add16bitInternal(pc, 1);
-                cost = 8;
             }
-        }
-            break;
+            case 0x3a -> {
+                a = bus.peekb(fetchW());
+                cost = 13;
+            }
+            case 0xe3 -> { // ex (sp),hl
+                int t = bus.peekw(sp);
+                bus.pokew(sp, hl);
+                hl = t;
+                cost = 19;
+            }
+            case 0xeb -> { // ex de,hl
+                int t = getDE();
+                setDE(hl);
+                hl = t;
+                cost = 4;
+            }
+            case 0xf9 -> {
+                sp = hl;
+                cost = 6;
+            }
+            case 0xe9 -> {
+                pc = hl;
+                cost = 4;
+            }
+            case 0x3c -> {
+                a = inc8bit(a);
+                cost = 4;
+            }
+            case 0x04 -> {
+                b = inc8bit(b);
+                cost = 4;
+            }
+            case 0x0c -> {
+                c = inc8bit(c);
+                cost = 4;
+            }
+            case 0x14 -> {
+                d = inc8bit(d);
+                cost = 4;
+            }
+            case 0x1c -> {
+                e = inc8bit(e);
+                cost = 4;
+            }
+            case 0x24 -> {
+                setH(inc8bit(getH()));
+                cost = 4;
+            }
+            case 0x2c -> {
+                setL(inc8bit(getL()));
+                cost = 4;
+            }
+            case 0x34 -> {
+                bus.pokeb(hl, inc8bit(bus.peekb(hl)));
+                cost = 11;
+            }
+            case 0x3d -> {
+                a = dec8bit(a);
+                cost = 4;
+            }
+            case 0x05 -> {
+                b = dec8bit(b);
+                cost = 4;
+            }
+            case 0x0d -> {
+                c = dec8bit(c);
+                cost = 4;
+            }
+            case 0x15 -> {
+                d = dec8bit(d);
+                cost = 4;
+            }
+            case 0x1d -> {
+                e = dec8bit(e);
+                cost = 4;
+            }
+            case 0x25 -> {
+                setH(dec8bit(getH()));
+                cost = 4;
+            }
+            case 0x2d -> {
+                setL(dec8bit(getL()));
+                cost = 4;
+            }
+            case 0x35 -> {
+                bus.pokeb(hl, dec8bit(bus.peekb(hl)));
+                cost = 11;
+            }
+            case 0x03 -> {
+                setBC(getBC() + 1);
+                cost = 6;
+            }
+            case 0x13 -> {
+                setDE(getDE() + 1);
+                cost = 6;
+            }
+            case 0x23 -> {
+                hl += 1;
+                cost = 6;
+            }
+            case 0x33 -> {
+                sp = inc16bitInternal(sp);
+                cost = 6;
+            }
+            case 0x0b -> {
+                setBC(getBC() - 1);
+                cost = 6;
+            }
+            case 0x1b -> {
+                setDE(getDE() - 1);
+                cost = 6;
+            }
+            case 0x2b -> {
+                hl -= 1;
+                cost = 6;
+            }
+            case 0x3b -> {
+                sp = sub16bitInternal(sp, 1);
+                cost = 6;
+            }
+            case 0x87 -> {
+                a = add8bit(a, a);
+                cost = 4;
+            }
+            case 0x80 -> {
+                a = add8bit(a, b);
+                cost = 4;
+            }
+            case 0x81 -> {
+                a = add8bit(a, c);
+                cost = 4;
+            }
+            case 0x82 -> {
+                a = add8bit(a, d);
+                cost = 4;
+            }
+            case 0x83 -> {
+                a = add8bit(a, e);
+                cost = 4;
+            }
+            case 0x84 -> {
+                a = add8bit(a, getH());
+                cost = 4;
+            }
+            case 0x85 -> {
+                a = add8bit(a, getL());
+                cost = 4;
+            }
+            case 0x86 -> {
+                a = add8bit(a, bus.peekb(hl));
+                cost = 7;
+            }
+            case 0x8f -> {
+                a = adc8bit(a, a);
+                cost = 4;
+            }
+            case 0x88 -> {
+                a = adc8bit(a, b);
+                cost = 4;
+            }
+            case 0x89 -> {
+                a = adc8bit(a, c);
+                cost = 4;
+            }
+            case 0x8a -> {
+                a = adc8bit(a, d);
+                cost = 4;
+            }
+            case 0x8b -> {
+                a = adc8bit(a, e);
+                cost = 4;
+            }
+            case 0x8c -> {
+                a = adc8bit(a, getH());
+                cost = 4;
+            }
+            case 0x8d -> {
+                a = adc8bit(a, getL());
+                cost = 4;
+            }
+            case 0x8e -> {
+                a = adc8bit(a, bus.peekb(hl));
+                cost = 7;
+            }
+            case 0x97 -> {
+                a = sub8bit(a, a);
+                cost = 4;
+            }
+            case 0x90 -> {
+                a = sub8bit(a, b);
+                cost = 4;
+            }
+            case 0x91 -> {
+                a = sub8bit(a, c);
+                cost = 4;
+            }
+            case 0x92 -> {
+                a = sub8bit(a, d);
+                cost = 4;
+            }
+            case 0x93 -> {
+                a = sub8bit(a, e);
+                cost = 4;
+            }
+            case 0x94 -> {
+                a = sub8bit(a, getH());
+                cost = 4;
+            }
+            case 0x95 -> {
+                a = sub8bit(a, getL());
+                cost = 4;
+            }
+            case 0x96 -> {
+                a = sub8bit(a, bus.peekb(hl));
+                cost = 7;
+            }
+            case 0x9f -> {
+                a = sbc8bit(a, a);
+                cost = 4;
+            }
+            case 0x98 -> {
+                a = sbc8bit(a, b);
+                cost = 4;
+            }
+            case 0x99 -> {
+                a = sbc8bit(a, c);
+                cost = 4;
+            }
+            case 0x9a -> {
+                a = sbc8bit(a, d);
+                cost = 4;
+            }
+            case 0x9b -> {
+                a = sbc8bit(a, e);
+                cost = 4;
+            }
+            case 0x9c -> {
+                a = sbc8bit(a, getH());
+                cost = 4;
+            }
+            case 0x9d -> {
+                a = sbc8bit(a, getL());
+                cost = 4;
+            }
+            case 0x9e -> {
+                a = sbc8bit(a, bus.peekb(hl));
+                cost = 7;
+            }
+            case 0xbf -> {
+                cmp8bit(a, a);
+                cost = 4;
+            }
+            case 0xb8 -> {
+                cmp8bit(a, b);
+                cost = 4;
+            }
+            case 0xb9 -> {
+                cmp8bit(a, c);
+                cost = 4;
+            }
+            case 0xba -> {
+                cmp8bit(a, d);
+                cost = 4;
+            }
+            case 0xbb -> {
+                cmp8bit(a, e);
+                cost = 4;
+            }
+            case 0xbc -> {
+                cmp8bit(a, getH());
+                cost = 4;
+            }
+            case 0xbd -> {
+                cmp8bit(a, getL());
+                cost = 4;
+            }
+            case 0xbe -> {
+                cmp8bit(a, bus.peekb(hl));
+                cost = 7;
+            }
+            case 0xa7 -> {
+                a = and8bit(a, a);
+                cost = 4;
+            }
+            case 0xa0 -> {
+                a = and8bit(a, b);
+                cost = 4;
+            }
+            case 0xa1 -> {
+                a = and8bit(a, c);
+                cost = 4;
+            }
+            case 0xa2 -> {
+                a = and8bit(a, d);
+                cost = 4;
+            }
+            case 0xa3 -> {
+                a = and8bit(a, e);
+                cost = 4;
+            }
+            case 0xa4 -> {
+                a = and8bit(a, getH());
+                cost = 4;
+            }
+            case 0xa5 -> {
+                a = and8bit(a, getL());
+                cost = 4;
+            }
+            case 0xa6 -> {
+                a = and8bit(a, bus.peekb(hl));
+                cost = 7;
+            }
+            case 0xaf -> {
+                a = xor8bit(a, a);
+                cost = 4;
+            }
+            case 0xa8 -> {
+                a = xor8bit(a, b);
+                cost = 4;
+            }
+            case 0xa9 -> {
+                a = xor8bit(a, c);
+                cost = 4;
+            }
+            case 0xaa -> {
+                a = xor8bit(a, d);
+                cost = 4;
+            }
+            case 0xab -> {
+                a = xor8bit(a, e);
+                cost = 4;
+            }
+            case 0xac -> {
+                a = xor8bit(a, getH());
+                cost = 4;
+            }
+            case 0xad -> {
+                a = xor8bit(a, getL());
+                cost = 4;
+            }
+            case 0xae -> {
+                a = xor8bit(a, bus.peekb(hl));
+                cost = 7;
+            }
+            case 0xb7 -> {
+                a = or8bit(a, a);
+                cost = 4;
+            }
+            case 0xb0 -> {
+                a = or8bit(a, b);
+                cost = 4;
+            }
+            case 0xb1 -> {
+                a = or8bit(a, c);
+                cost = 4;
+            }
+            case 0xb2 -> {
+                a = or8bit(a, d);
+                cost = 4;
+            }
+            case 0xb3 -> {
+                a = or8bit(a, e);
+                cost = 4;
+            }
+            case 0xb4 -> {
+                a = or8bit(a, getH());
+                cost = 4;
+            }
+            case 0xb5 -> {
+                a = or8bit(a, getL());
+                cost = 4;
+            }
+            case 0xb6 -> {
+                a = or8bit(a, bus.peekb(hl));
+                cost = 7;
+            }
+            case 0xc6 -> {
+                a = add8bit(a, fetchB());
+                cost = 7;
+            }
+            case 0xce -> {
+                a = adc8bit(a, fetchB());
+                cost = 7;
+            }
+            case 0xd6 -> {
+                a = sub8bit(a, fetchB());
+                cost = 7;
+            }
+            case 0xde -> {
+                a = sbc8bit(a, fetchB());
+                cost = 7;
+            }
+            case 0xe6 -> {
+                a = and8bit(a, fetchB());
+                cost = 7;
+            }
+            case 0xee -> {
+                a = xor8bit(a, fetchB());
+                cost = 7;
+            }
+            case 0xf6 -> {
+                a = or8bit(a, fetchB());
+                cost = 7;
+            }
+            case 0xfe -> {
+                cmp8bit(a, fetchB());
+                cost = 7;
+            }
+            case 0x09 -> {
+                hl = add16bit(hl, getBC());
+                cost = 11;
+            }
+            case 0x19 -> {
+                hl = add16bit(hl, getDE());
+                cost = 11;
+            }
+            case 0x29 -> {
+                hl = add16bit(hl, hl);
+                cost = 11;
+            }
+            case 0x39 -> {
+                hl = add16bit(hl, sp);
+                cost = 11;
+            }
+            case 0x27 -> { // daa
+                int v = a;
+                if (((v & 0x0f) > 9) || fh) {
+                    a = add8bitInternal(a, fn ? -6 : 6);
+                }
+                if ((v > 0x99) || fc) {
+                    a = add8bitInternal(a, fn ? -0x60 : 0x60);
+                }
 
-        case 0x18: { // jr e
-            byte v = (byte) fetchB();
-            pc = add16bitInternal(pc, v);
-            cost = 12;
-        }
-            break;
-        case 0x20: { // jr nz,e
-            if (!fz) {
+                fc = fc | (v > 0x99);
+                fh = ((v ^ a) & 0x10) != 0;
+                fp = isParity(a);
+                fz = isZero(a);
+                fs = isSign(a);
+
+                cost = 4;
+            }
+            case 0x2f -> {
+                fh = true;
+                fn = true;
+                a ^= 0xff;
+                cost = 4;
+            }
+            case 0x3f -> {
+                fn = false;
+                fh = fc;
+                fc = !fc;
+                cost = 4;
+            }
+            case 0x37 -> {
+                fh = false;
+                fn = false;
+                fc = true;
+                cost = 4;
+            }
+            case 0x07 -> {
+                a = rlc(a, false);
+                cost = 4;
+            }
+            case 0x0f -> {
+                a = rrc(a, false);
+                cost = 4;
+            }
+            case 0x17 -> {
+                a = rl(a, false);
+                cost = 4;
+            }
+            case 0x1f -> {
+                a = rr(a, false);
+                cost = 4;
+            }
+            case 0xc3 -> {
+                pc = bus.peekw(pc);
+                cost = 10;
+            }
+            case 0xda -> { // jp c,nn
+                if (fc) {
+                    pc = fetchW();
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                }
+                cost = 10;
+            }
+            case 0xd2 -> { // jp nc,nn
+                if (!fc) {
+                    pc = fetchW();
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                }
+                cost = 10;
+            }
+            case 0xca -> { // jp z,nn
+                if (fz) {
+                    pc = fetchW();
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                }
+                cost = 10;
+            }
+            case 0xc2 -> { // jp nz,nn
+                if (!fz) {
+                    pc = fetchW();
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                }
+                cost = 10;
+            }
+            case 0xea -> { // jp pe,nn
+                if (fp) {
+                    pc = fetchW();
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                }
+                cost = 10;
+            }
+            case 0xe2 -> { // jp po,nn
+                if (!fp) {
+                    pc = fetchW();
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                }
+                cost = 10;
+            }
+            case 0xfa -> { // jp m,nn
+                if (fs) {
+                    pc = fetchW();
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                }
+                cost = 10;
+            }
+            case 0xf2 -> { // jp p,nn
+                if (!fs) {
+                    pc = fetchW();
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                }
+                cost = 10;
+            }
+            case 0xcd -> { // call
+                call();
+                cost = 17;
+            }
+            case 0xdc -> { // call c,nn
+                if (fc) {
+                    call();
+                    cost = 17;
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                    cost = 10;
+                }
+            }
+            case 0xd4 -> { // call nc,nn
+                if (!fc) {
+                    call();
+                    cost = 17;
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                    cost = 10;
+                }
+            }
+            case 0xcc -> { // call z,nn
+                if (fz) {
+                    call();
+                    cost = 17;
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                    cost = 10;
+                }
+            }
+            case 0xc4 -> { // call nz,nn
+                if (!fz) {
+                    call();
+                    cost = 17;
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                    cost = 10;
+                }
+            }
+            case 0xec -> { // call pe,nn
+                if (fp) {
+                    call();
+                    cost = 17;
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                    cost = 10;
+                }
+            }
+            case 0xe4 -> { // call po,nn
+                if (!fp) {
+                    call();
+                    cost = 17;
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                    cost = 10;
+                }
+            }
+            case 0xfc -> { // call m,nn
+                if (fs) {
+                    call();
+                    cost = 17;
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                    cost = 10;
+                }
+            }
+            case 0xf4 -> { // call p,nn
+                if (!fs) {
+                    call();
+                    cost = 17;
+                } else {
+                    pc = add16bitInternal(pc, 2);
+                    cost = 10;
+                }
+            }
+            case 0xc7 -> {
+                push(pc);
+                pc = 0 * 8;
+                cost = 11;
+            }
+            case 0xcf -> {
+                push(pc);
+                pc = 1 * 8;
+                cost = 11;
+            }
+            case 0xd7 -> {
+                push(pc);
+                pc = 2 * 8;
+                cost = 11;
+            }
+            case 0xdf -> {
+                push(pc);
+                pc = 3 * 8;
+                cost = 11;
+            }
+            case 0xe7 -> {
+                push(pc);
+                pc = 4 * 8;
+                cost = 11;
+            }
+            case 0xef -> {
+                push(pc);
+                pc = 5 * 8;
+                cost = 11;
+            }
+            case 0xf7 -> {
+                push(pc);
+                pc = 6 * 8;
+                cost = 11;
+            }
+            case 0xff -> {
+                push(pc);
+                pc = 7 * 8;
+                cost = 11;
+            }
+            case 0xc9 -> {
+                pc = pop();
+                cost = 10;
+            }
+            case 0xd8 -> {
+                if (fc) {
+                    pc = pop();
+                    cost = 11;
+                } else {
+                    cost = 5;
+                }
+            }
+            case 0xd0 -> {
+                if (!fc) {
+                    pc = pop();
+                    cost = 11;
+                } else {
+                    cost = 5;
+                }
+            }
+            case 0xc8 -> {
+                if (fz) {
+                    pc = pop();
+                    cost = 11;
+                } else {
+                    cost = 5;
+                }
+            }
+            case 0xc0 -> {
+                if (!fz) {
+                    pc = pop();
+                    cost = 11;
+                } else {
+                    cost = 5;
+                }
+            }
+            case 0xe8 -> {
+                if (fp) {
+                    pc = pop();
+                    cost = 11;
+                } else {
+                    cost = 5;
+                }
+            }
+            case 0xe0 -> {
+                if (!fp) {
+                    pc = pop();
+                    cost = 11;
+                } else {
+                    cost = 5;
+                }
+            }
+            case 0xf8 -> {
+                if (fs) {
+                    pc = pop();
+                    cost = 11;
+                } else {
+                    cost = 5;
+                }
+            }
+            case 0xf0 -> {
+                if (!fs) {
+                    pc = pop();
+                    cost = 11;
+                } else {
+                    cost = 5;
+                }
+            }
+            case 0xc5 -> {
+                push(getBC());
+                cost = 11;
+            }
+            case 0xd5 -> {
+                push(getDE());
+                cost = 11;
+            }
+            case 0xe5 -> {
+                push(hl);
+                cost = 11;
+            }
+            case 0xf5 -> {
+                push(getAF());
+                cost = 11;
+            }
+            case 0xc1 -> {
+                setBC(pop());
+                cost = 10;
+            }
+            case 0xd1 -> {
+                setDE(pop());
+                cost = 10;
+            }
+            case 0xe1 -> {
+                hl = pop();
+                cost = 10;
+            }
+            case 0xf1 -> {
+                setAF(pop());
+                cost = 10;
+            }
+            case 0xdb -> {
+                a = bus.inp(fetchB());
+                cost = 11;
+            }
+            case 0xd3 -> {
+                bus.outp(fetchB(), a);
+                cost = 11;
+            }
+            case 0xf3 -> {
+                iff1 = false;
+                iff2 = false;
+//logger.log(Level.TRACE, "DI");
+                cost = 4;
+            }
+            case 0xfb -> {
+                iff1 = true;
+                iff2 = true;
+//logger.log(Level.TRACE, "EI");
+                cost = 4;
+            }
+            case 0x00 -> // nop
+                    cost = 4;
+            case 0x76 -> {
+                cost = 4;
+                logger.log(Level.INFO, "halt: %4x".formatted(dec16bitInternal(pc)));
+                while (!broken) {
+//                    r = add8bitInternal(xxx); // TODO check
+                    Thread.yield();
+                }
+            }
+
+            /*
+             * Z80 instruction set
+             */
+
+            case 0x08 -> { // ex af,af'
+                int t = getAF();
+                setAF(af2);
+                af2 = t;
+                cost = 4;
+            }
+            case 0x10 -> { // djnz e
+                b = dec8bitInternal(b);
+                if (b != 0) {
+                    byte v = (byte) fetchB();
+                    pc = add16bitInternal(pc, v);
+                    cost = 13;
+                } else {
+                    pc = add16bitInternal(pc, 1);
+                    cost = 8;
+                }
+            }
+            case 0x18 -> { // jr e
                 byte v = (byte) fetchB();
                 pc = add16bitInternal(pc, v);
                 cost = 12;
-            } else {
-                pc = add16bitInternal(pc, 1);
-                cost = 7;
             }
-        }
-            break;
-        case 0x28: { // jr z,e
-            if (fz) {
-                byte v = (byte) fetchB();
-                pc = add16bitInternal(pc, v);
-                cost = 12;
-            } else {
-                pc = add16bitInternal(pc, 1);
-                cost = 7;
+            case 0x20 -> { // jr nz,e
+                if (!fz) {
+                    byte v = (byte) fetchB();
+                    pc = add16bitInternal(pc, v);
+                    cost = 12;
+                } else {
+                    pc = add16bitInternal(pc, 1);
+                    cost = 7;
+                }
             }
-        }
-            break;
-        case 0x30: { // jr nc,e
-            if (!fc) {
-                byte v = (byte) fetchB();
-                pc = add16bitInternal(pc, v);
-                cost = 12;
-            } else {
-                pc = add16bitInternal(pc, 1);
-                cost = 7;
+            case 0x28 -> { // jr z,e
+                if (fz) {
+                    byte v = (byte) fetchB();
+                    pc = add16bitInternal(pc, v);
+                    cost = 12;
+                } else {
+                    pc = add16bitInternal(pc, 1);
+                    cost = 7;
+                }
             }
-        }
-            break;
-        case 0x38: { // jr c,e
-            if (fc) {
-                byte v = (byte) fetchB();
-                pc = add16bitInternal(pc, v);
-                cost = 12;
-            } else {
-                pc = add16bitInternal(pc, 1);
-                cost = 7;
+            case 0x30 -> { // jr nc,e
+                if (!fc) {
+                    byte v = (byte) fetchB();
+                    pc = add16bitInternal(pc, v);
+                    cost = 12;
+                } else {
+                    pc = add16bitInternal(pc, 1);
+                    cost = 7;
+                }
             }
-        }
-            break;
+            case 0x38 -> { // jr c,e
+                if (fc) {
+                    byte v = (byte) fetchB();
+                    pc = add16bitInternal(pc, v);
+                    cost = 12;
+                } else {
+                    pc = add16bitInternal(pc, 1);
+                    cost = 7;
+                }
+            }
+            case 0xcb -> // cb xx
+                    exec_cb();
+            case 0xd9 -> { // exx
+                int t = getBC();
+                setBC(bc2);
+                bc2 = t;
 
-        case 0xcb: // cb xx
-            exec_cb();
-            break;
+                t = getDE();
+                setDE(de2);
+                de2 = t;
 
-        case 0xd9: { // exx
-            int t = getBC();
-            setBC(bc2);
-            bc2 = t;
+                t = hl;
+                hl = hl2;
+                hl2 = t;
 
-            t = getDE();
-            setDE(de2);
-            de2 = t;
-
-            t = hl;
-            hl = hl2;
-            hl2 = t;
-
-            cost = 4;
-        }
-            break;
-
-        case 0xdd: // dd xx
-            exec_dd();
-            break;
-
-        case 0xed: // ed xx
-            exec_ed();
-            break;
-
-        case 0xfd: // fd xx
-            exec_fd();
-            break;
-
-        default:
-Debug.printf("Unknown instruction: %02x", o);
-            break;
+                cost = 4;
+            }
+            case 0xdd -> // dd xx
+                    exec_dd();
+            case 0xed -> // ed xx
+                    exec_ed();
+            case 0xfd -> // fd xx
+                    exec_fd();
+            default -> logger.log(Level.INFO, "Unknown instruction: %02x".formatted(o));
         }
 
         return cost;
@@ -3434,7 +3365,7 @@ Debug.printf("Unknown instruction: %02x", o);
             break;
 
         default:
-Debug.printf("Unknown instruction: CB %02x", v);
+logger.log(Level.INFO, "Unknown instruction: CB %02x".formatted(v));
             break;
         }
     }
@@ -3674,7 +3605,7 @@ Debug.printf("Unknown instruction: CB %02x", v);
             break;
 
         default:
-Debug.printf("Unknown instruction: DD %02x", v);
+logger.log(Level.INFO, "Unknown instruction: DD %02x".formatted(v));
             break;
         }
     }
@@ -3908,7 +3839,7 @@ Debug.printf("Unknown instruction: DD %02x", v);
             break;
 
         default:
-Debug.printf("Unknown instruction: DD CB %02x", v);
+logger.log(Level.INFO, "Unknown instruction: DD CB %02x".formatted(v));
             break;
         }
 
@@ -4075,17 +4006,17 @@ Debug.printf("Unknown instruction: DD CB %02x", v);
 
         case 0x46: // im 0
             im = 0;
-Debug.println("im 0");
+//logger.log(Level.DEBUG, "im 0");
             cost = 8;
             break;
         case 0x56: // im 1
             im = 1;
-Debug.println("im 1");
+//logger.log(Level.DEBUG, "im 1");
             cost = 8;
             break;
         case 0x5e: // im 2
             im = 2;
-Debug.println("im 2");
+//logger.log(Level.DEBUG, "im 2");
             cost = 8;
             break;
 
@@ -4261,7 +4192,7 @@ Debug.println("im 2");
             break;
 
         default:
-Debug.printf("Unknown instruction: ED %02x", o);
+logger.log(Level.INFO, "Unknown instruction: ED %02x".formatted(o));
             break;
         }
     }
@@ -4608,7 +4539,7 @@ Debug.printf("Unknown instruction: ED %02x", o);
             break;
 
         default:
-Debug.printf("Unknown instruction : FD %02x", v);
+logger.log(Level.INFO, "Unknown instruction : FD %02x".formatted(v));
             break;
         }
     }
@@ -4842,14 +4773,14 @@ Debug.printf("Unknown instruction : FD %02x", v);
             break;
 
         default:
-Debug.printf("Unknown instruction : FD CB %02x", v);
+logger.log(Level.INFO, "Unknown instruction : FD CB %02x".formatted(v));
             break;
         }
 
         pc = add16bitInternal(pc, 2);
     }
 
-    // -------------------------------------------------------------------------
+    // ----
 
     /** */
     private static Properties names = new Properties();
@@ -4866,5 +4797,3 @@ Debug.printf("Unknown instruction : FD CB %02x", v);
         }
     }
 }
-
-/* */

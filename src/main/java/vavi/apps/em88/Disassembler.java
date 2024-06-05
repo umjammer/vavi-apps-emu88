@@ -6,15 +6,12 @@
 
 package vavi.apps.em88;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Properties;
 
-import vavi.util.Debug;
+import static java.lang.System.getLogger;
 
 
 /**
@@ -26,6 +23,8 @@ import vavi.util.Debug;
  *          2.00 040111 nsano outsource instructions <br>
  */
 class Disassembler implements Device {
+
+    private static final Logger logger = getLogger(Disassembler.class.getName());
 
     /** */
     private Bus bus;
@@ -177,7 +176,7 @@ class Disassembler implements Device {
         }
 
 if (currentMnemonic == null) {
- Debug.println("???: " + toHex2(o1) + ", " + toHex2(o2));
+ //logger.log(Level.DEBUG, "???: " + toHex2(o1) + ", " + toHex2(o2));
 }
         return address;
     }
@@ -300,7 +299,7 @@ if (currentMnemonic == null) {
             final String path4 = "/outport.properties";
             outportNames.load(clazz.getResourceAsStream(path4));
         } catch (Exception e) {
-Debug.printStackTrace(e);
+logger.log(Level.ERROR, e.getMessage(), e);
             throw new IllegalStateException(e);
         }
     }
@@ -323,63 +322,8 @@ Debug.printStackTrace(e);
         Entry entry = new Entry(type, length, mnemonic);
         table[i] = entry;
 //} catch (RuntimeException e) {
-// Debug.println(key);
+//logger.log(Level.TRACE, key);
 // throw e;
 //}
     }
-
-    /**
-     * run disassembler
-     *
-     * @param args 0: file, 1: start address, 2: bytes, 3: offset
-     */
-    public static void main(String[] args) throws IOException {
-        Bus bus = new Bus.SimpleBus();
-
-        int offset = 0;
-        if (args.length > 3) {
-            offset = Integer.parseInt(args[3], 16);
-        }
-
-        Path file = Paths.get(args[0]);
-
-        int start = 0;
-        if (args.length > 1) {
-            start = Integer.parseInt(args[1], 16);
-        }
-        int bytes = 0x10000;
-        if (args.length > 2) {
-            bytes = Integer.parseInt(args[2], 16);
-        }
-
-        byte[] data = Files.readAllBytes(file);
-        bus.pokes(start, Arrays.copyOfRange(data, offset, offset + bytes));
-
-        Disassembler da = new Disassembler();
-        da.setBus(bus);
-Debug.printf("%04x, %08x", start, bytes);
-        int pc = start;
-        while (pc - start < bytes) {
-            int next = da.execute(pc);
-
-            System.out.printf("%04x ", pc);
-            for (int i = 0; i < 4; i++) {
-                if (i < next - pc) {
-                    System.out.printf("%02x", bus.peekb(pc + i));
-                } else {
-                    System.out.print("  ");
-                }
-            }
-            System.out.print("\t" + da.getCurrentMnemonic());
-            if (da.getCurrentComment() != null) {
-                System.out.println("\t\t; " + da.getCurrentComment());
-            } else {
-                System.out.println();
-            }
-
-            pc = next;
-        }
-    }
 }
-
-/* */

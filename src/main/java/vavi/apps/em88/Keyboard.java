@@ -15,15 +15,15 @@ import vavi.util.Debug;
 
 
 /**
- * PC-8801 のキーボードをエミュレーションします．
+ * Emulates a PC-8801 keyboard.
  *
- * TODO 三つ押されたら四つ目が反応する件
+ * TODO When three buttons are pressed, the fourth button responds.
  * <pre>
  *
  *  -X--X-
  *   |  |
  *  -O--X-
- *   ↑ ここ
+ *   ↑ here
  * </pre>
  *
  * @author <a href=mailto:umjammer@gmail.com>Naohide Sano</a> (nsano)
@@ -46,7 +46,7 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
     /** key port 0x00 ~ 0x0b */
     private int[] keyPort = new int[12];
 
-    /** 指定したポートの値を取得します． */
+    /** Gets the value of the specified port. */
     public int getPort(int port) {
         return keyPort[port];
     }
@@ -438,8 +438,8 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
         case KeyEvent.VK_F12:
             keyPort[10] &= ~RK_COPY;
             break;
-        // case KeyEvent.: keyPort[10] &= ~RK_NUMPAD_MINUS; break;
-        // case KeyEvent.: keyPort[10] &= ~RK_NUMPAD_SLASH; break;
+//         case KeyEvent.: keyPort[10] &= ~RK_NUMPAD_MINUS; break;
+//         case KeyEvent.: keyPort[10] &= ~RK_NUMPAD_SLASH; break;
         case KeyEvent.VK_CAPS_LOCK:
             keyPort[10] &= ~RK_CAPS_LOCK;
             break;
@@ -455,7 +455,7 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
 
     /** */
     public void keyReleased(KeyEvent ev) {
-        // Debug.println(ev.getKeyCode());
+        //logger.log(Level.TRACE, ev.getKeyCode());
         switch (ev.getKeyCode()) {
         // 00
         case KeyEvent.VK_NUMPAD0:
@@ -733,10 +733,8 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
             break;
         //
         case KeyEvent.VK_PAUSE:
-            Debug.println("reset");
+            //logger.log(Level.DEBUG, "reset");
             break;
         }
     }
 }
-
-/* */

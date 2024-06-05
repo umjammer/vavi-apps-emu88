@@ -9,7 +9,6 @@ package vavi.apps.em88;
 import java.util.HashMap;
 import java.util.Map;
 
-import static vavi.apps.em88.Z80.add16bitInternal;
 import static vavi.apps.em88.Z80.inc16bitInternal;
 
 
@@ -24,7 +23,7 @@ import static vavi.apps.em88.Z80.inc16bitInternal;
  */
 public abstract class Bus {
 
-    /** ある状況で実際どのメモリにマッピングされているかを現すクラスです。 */
+    /** A class that represents what memory is actually mapped in a given situation. */
     public static final class Mapping {
         /** */
         public byte[] base;
@@ -32,15 +31,15 @@ public abstract class Bus {
         public int pointer;
     }
 
-    /** メモリの読み書きの方向を表す列挙です。 */
+    /** An enumeration that describes the direction of memory reads and writes. */
     public enum Direction {
         READ,
         WRITE
     }
 
     /**
-     * @param address 16bit のアドレス
-     * @param direction {@link Direction} で {@link Mapping} が変わる場合がある
+     * @param address 16bit address
+     * @param direction {@link Direction} may change {@link Mapping}
      */
     protected abstract Mapping getMapping(int address, Direction direction);
 
@@ -62,21 +61,21 @@ public abstract class Bus {
     public void pokeb(int address, int value) {
         Mapping mapping = getMapping(address, Direction.WRITE);
         mapping.base[mapping.pointer] = (byte) (value & 0xff);
-// Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d));
+//logger.log(Level.TRACE, StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d));
     }
 
     /** */
     public final void pokew(int address, int value) {
         pokeb(address, value);
         pokeb(inc16bitInternal(address), value >> 8);
-// Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
+//logger.log(Level.TRACE, StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
     }
 
     /** */
     public final void pokew(int address, int h, int l) {
         pokeb(address, h);
         pokeb(inc16bitInternal(address), l);
-// Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
+//logger.log(Level.TRACE, StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
     }
 
     /** */
@@ -117,28 +116,4 @@ public abstract class Bus {
             device.setBus(this);
         }
     }
-
-    /** for test */
-    public static class SimpleBus extends Bus {
-        final byte[] ram = new byte[0x10000];
-        final byte[] io = new byte[0x100];
-        Mapping address = new Mapping();
-
-        { address.base = ram; }
-
-        @Override protected Mapping getMapping(int a, Direction direction) {
-            address.pointer = a;
-            return address;
-        }
-
-        @Override public int inp(int p) {
-            return io[p & 0xff] & 0xff;
-        }
-
-        @Override public void outp(int p, int d) {
-            io[p & 0xff] = (byte) (d & 0xff);
-        }
-    }
 }
-
-/* */

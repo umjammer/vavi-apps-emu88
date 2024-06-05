@@ -18,5 +18,3 @@ interface Device {
     /** */
     void setBus(Bus bus);
 }
-
-/* */

@@ -50,5 +50,3 @@ class UIOP implements Device {
         this.port2 = port2;
     }
 }
-
-/* */

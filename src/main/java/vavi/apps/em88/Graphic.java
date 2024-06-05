@@ -96,7 +96,7 @@ final class Graphic implements Device {
     /** */
     public void set40(boolean _40) {
         this._40 = _40;
-// Debug.println(_40);
+//logger.log(Level.TRACE, _40);
         view.set40(_40);
     }
 
@@ -106,7 +106,7 @@ final class Graphic implements Device {
     /** */
     public void set25Line(boolean _25Line) {
         this._25Line = _25Line;
-// Debug.println(_25Line);
+//logger.log(Level.TRACE, _25Line);
         view.set25Line(_25Line);
     }
 
@@ -138,10 +138,10 @@ final class Graphic implements Device {
         int l = offset / 120;
 
 // if (Character.isLetterOrDigit((char) data)) {
-//  Debug.println((char) data + ": " + c + ", " + l);
+//  logger.log(Level.TRACE, (char) data + ": " + c + ", " + l);
 // }
 // if (Character.isLetterOrDigit((char) data)) {
-//  System.err.print(StringUtil.toHex4(data) + " ");
+//  System.err.print(Level.TRACE, "%4x ".formatted(data));
 // }
         if (c > 80) {
             int atr, len;
@@ -165,5 +165,3 @@ final class Graphic implements Device {
         }
     }
 }
-
-/* */

@@ -108,11 +108,11 @@ class DMA implements Device {
             if (enabled) {
 //                  timers[i] = new Timer();
 //                  timers[i].schedule(new DmaTimerTask(i), 0, 333);
-Debug.println("channel " + i + " start: " + StringUtil.toHex4(addresses[i]) + ", " + StringUtil.toHex4(counts[i]));
+//logger.log(Level.TRACE, "channel " + i + " start: " + StringUtil.toHex4(addresses[i]) + ", " + StringUtil.toHex4(counts[i]));
             } else if (timers[i] != null) {
 //                  timers[i].cancel();
 //                  timers[i] = null;
-Debug.println("channel " + i + " stop");
+//logger.log(Level.TRACE, "channel " + i + " stop");
             }
         }
     }
@@ -131,7 +131,7 @@ Debug.println("channel " + i + " stop");
             this.channel = channel;
         }
         public void run() {
-//Debug.println(StringUtil.toHex4(addresses[channel]) + ", " + StringUtil.toHex4(counts[channel]));
+//logger.log(Level.TRACE, StringUtil.toHex4(addresses[channel]) + ", " + StringUtil.toHex4(counts[channel]));
             for (int i = 0; i <= counts[channel]; i++) {
                 graphic.pokeb(i, bus.peekb(addresses[channel] + i));
             }
@@ -139,5 +139,3 @@ Debug.println("channel " + i + " stop");
         }
     }
 }
-
-/* */

@@ -13,7 +13,7 @@ import java.util.function.Function;
 import com.flextrade.jfixture.JFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.provider.Arguments;
-import vavi.apps.em88.Bus;
+import vavi.apps.em88.SimpleBus;
 import vavi.apps.em88.Z80;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,7 +29,7 @@ abstract class InstructionsExecutionTestsBase {
     @BeforeEach
     protected void setup() {
         sut = new Z80();
-        sut.setBus(new Bus.SimpleBus());
+        sut.setBus(new SimpleBus());
 
         fixture = new JFixture();
     }
@@ -119,11 +119,11 @@ abstract class InstructionsExecutionTestsBase {
         }
     }
 
-    protected int execute(byte opcode, Byte prefix/*= null*/, byte... nextFetches) {
+    protected int execute(byte opcode, Byte prefix /* = null */, byte... nextFetches) {
         return executeAt((short) 0, opcode, prefix, nextFetches);
     }
 
-    protected int executeAt(short address, byte opcode, Byte prefix/*= null*/, byte... nextFetches) {
+    protected int executeAt(short address, byte opcode, Byte prefix /* = null */, byte... nextFetches) {
         sut.setPC(inc16bitInternal(address & 0xffff)); // Inc needed to simulate the first fetch made by the enclosing Z80Processor
         if (prefix == null) {
             setMemoryContentsAt(inc(address), nextFetches);
@@ -136,11 +136,11 @@ abstract class InstructionsExecutionTestsBase {
         }
     }
 
-    protected Object ifIndexRegister(String regName, Object value, Object else_) {
+    protected static Object ifIndexRegister(String regName, Object value, Object else_) {
         return regName.startsWith("IX") || regName.startsWith("IY") ? value : else_;
     }
 
-    protected void assertNoFlagsAreModified(byte opcode, Byte prefix/*= null*/) {
+    protected void assertNoFlagsAreModified(byte opcode, Byte prefix /* = null */) {
         int value = fixture.create(Byte.TYPE);
         sut.setF(value);
         execute(opcode, prefix);
@@ -148,23 +148,23 @@ abstract class InstructionsExecutionTestsBase {
         assertEquals(value, sut.getF());
     }
 
-    protected void assertSetsFlags(byte opcode, Byte prefix/*= null*/, String... flagNames) {
+    protected void assertSetsFlags(byte opcode, Byte prefix /* = null */, String... flagNames) {
         assertSetsFlags(null, opcode, prefix, flagNames);
     }
 
-    protected void assertSetsFlags(Runnable executor, byte opcode, Byte prefix/*= null*/, String... flagNames) {
+    protected void assertSetsFlags(Runnable executor, byte opcode, Byte prefix /* = null */, String... flagNames) {
         assertSetsOrResetsFlags(opcode, true, prefix, executor, flagNames);
     }
 
-    protected void assertResetsFlags(byte opcode, Byte prefix/*= null*/, String... flagNames) {
+    protected void assertResetsFlags(byte opcode, Byte prefix /* = null */, String... flagNames) {
         assertResetsFlags(null, opcode, prefix, flagNames);
     }
 
-    protected void assertResetsFlags(Runnable executor, byte opcode, Byte prefix/*= null*/, String... flagNames) {
+    protected void assertResetsFlags(Runnable executor, byte opcode, Byte prefix /* = null */, String... flagNames) {
         assertSetsOrResetsFlags(opcode, false, prefix, executor, flagNames);
     }
 
-    protected void assertSetsOrResetsFlags(byte opcode, boolean expected, Byte prefix/*= null*/, Runnable executor/*= null*/, String... flagNames) {
+    protected void assertSetsOrResetsFlags(byte opcode, boolean expected, Byte prefix /* = null */, Runnable executor /* = null */, String... flagNames) {
         if (executor == null)
             executor = () -> execute(opcode, prefix);
 
@@ -183,11 +183,11 @@ abstract class InstructionsExecutionTestsBase {
         }
     }
 
-    protected void assertDoesNotChangeFlags(byte opcode, Byte prefix/*= null*/, String... flagNames) {
+    protected void assertDoesNotChangeFlags(byte opcode, Byte prefix /* = null */, String... flagNames) {
         assertDoesNotChangeFlags(null, opcode, prefix, flagNames);
     }
 
-    protected void assertDoesNotChangeFlags(Runnable executor, byte opcode, Byte prefix/*= null*/, String... flagNames) {
+    protected void assertDoesNotChangeFlags(Runnable executor, byte opcode, Byte prefix /* = null */, String... flagNames) {
         if (executor == null)
             executor = () -> execute(opcode, prefix);
 
@@ -219,7 +219,7 @@ abstract class InstructionsExecutionTestsBase {
         return (short) (sut.getBus().peekw(address & 0xffff) & 0xffff);
     }
 
-    protected void setupRegOrMem(String reg, byte value, byte offset/* = 0*/) {
+    protected void setupRegOrMem(String reg, byte value, byte offset /* = 0 */) {
         if (reg.equals("(HL)")) {
             short address = createAddressFixture();
             sut.getBus().pokeb(address & 0xffff, value & 0xff);
@@ -235,7 +235,7 @@ abstract class InstructionsExecutionTestsBase {
         }
     }
 
-    protected byte valueOfRegOrMem(String reg, byte offset/* = 0*/) {
+    protected byte valueOfRegOrMem(String reg, byte offset /* = 0 */) {
         if (reg.equals("(HL)")) {
             return (byte) (sut.getBus().peekb(sut.getHL()) & 0xff);
         } else if (reg.startsWith(("(I"))) {
@@ -247,7 +247,7 @@ abstract class InstructionsExecutionTestsBase {
         }
     }
 
-    protected static List<Arguments> getBitInstructionsSource(byte baseOpcode, boolean includeLoadReg/* = true*/, boolean loopSevenBits/* = false*/) {
+    protected static List<Arguments> getBitInstructionsSource(byte baseOpcode, boolean includeLoadReg /* = true */, boolean loopSevenBits /* = false */) {
         final Object[][] bases = new Object[][] {
                 new Object[] {"A", 7},
                 new Object[] {"B", 0},
@@ -276,7 +276,7 @@ abstract class InstructionsExecutionTestsBase {
                 if (!destReg.isEmpty() && !includeLoadReg) continue;
                 int regCode = baseOpcode | (bit << 3) | (int) instr[1];
                 for (String reg : new String[] {"(IX+n)", "(IY+n)"}) {
-if (!destReg.isEmpty()) continue; // TODO not implemented "xxx i[xy], r"
+if (!destReg.isEmpty()) { continue; } // TODO not implemented "xxx i[xy], r"
                     //srcReg, dest, opcode, prefix, bit
                     sources.add(arguments(
                             reg, destReg, (byte) regCode,
@@ -293,8 +293,8 @@ if (!destReg.isEmpty()) continue; // TODO not implemented "xxx i[xy], r"
      * @param regNamesArrayIndex OUT
      * @param prefix OUT
      */
-    protected static void modifyTestCaseCreationForIndexRegs(String regName, /* ref */int[] regNamesArrayIndex, /* out */Byte[] prefix) {
-//            prefix = null;
+    protected static void modifyTestCaseCreationForIndexRegs(String regName, /* ref */ int[] regNamesArrayIndex, /* out */ Byte[] prefix) {
+//        prefix = null;
 
         switch (regName) {
         case "IXH":
@@ -324,7 +324,7 @@ if (!destReg.isEmpty()) continue; // TODO not implemented "xxx i[xy], r"
         }
     }
 
-    protected int executeBit(byte opcode, Byte prefix/*= null*/, Byte offset/*= null*/) {
+    protected int executeBit(byte opcode, Byte prefix /* = null */, Byte offset /* = null */) {
         if (prefix == null)
             return execute(opcode, (byte) 0xCB);
         else
@@ -390,7 +390,7 @@ if (!destReg.isEmpty()) continue; // TODO not implemented "xxx i[xy], r"
     }
 
     /**
-     * Retuens a copy of the value that has a certain bit set or reset.
+     * Returns a copy of the value that has a certain bit set or reset.
      * The rightmost bit has position 0, the leftmost bit has position 7.
      *
      * @param number The original number

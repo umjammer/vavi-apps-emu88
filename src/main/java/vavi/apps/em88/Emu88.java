@@ -169,7 +169,7 @@ class Emu88 {
                     }
                 }
             } catch (NullPointerException e) {
-Debug.println("set font correctly: " + path);
+//logger.log(Level.TRACE, "set font correctly: " + path);
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
@@ -210,7 +210,7 @@ Debug.println("set font correctly: " + path);
                 for (int c = 0; c < 80; c++) {
                     Image image = textCharacters[tvram[l][c]];
                     g.drawImage(image, c * W, l * H, null);
-//if (Character.isLetterOrDigit((char) tvram[l][c])) Debug.println((char) tvram[l][c]);
+//if (Character.isLetterOrDigit((char) tvram[l][c])) //logger.log(Level.TRACE, (char) tvram[l][c]);
                 }
             }
         }
@@ -256,13 +256,13 @@ Debug.println("set font correctly: " + path);
                 while (l < length) {
                     int r = is.read(buf, l, length - l);
                     if (r < 0) {
-Debug.println("Illegal EOF: " + l + "/" + length);
+//logger.log(Level.TRACE, "Illegal EOF: " + l + "/" + length);
                         break;
                     }
                     l += r;
                 }
             } catch (NullPointerException e) {
-Debug.println(Level.SEVERE, "set roms correctly: " + roms.get(tag));
+//logger.log(Level.TRACE, Level.SEVERE, "set roms correctly: " + roms.get(tag));
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
@@ -321,5 +321,3 @@ Debug.println(Level.SEVERE, "set roms correctly: " + roms.get(tag));
         }
     }
 }
-
-/* */
