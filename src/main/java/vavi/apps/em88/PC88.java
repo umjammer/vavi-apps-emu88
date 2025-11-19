@@ -9,8 +9,6 @@ package vavi.apps.em88;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import vavi.util.Debug;
-
 import static java.lang.System.getLogger;
 
 

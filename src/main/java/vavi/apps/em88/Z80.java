@@ -444,7 +444,7 @@ public class Z80 implements Device {
         iff2 = v;
     }
 
-    // -------------------------------------------------------------------------
+    // ----
 
     /** μPD82xx */
     private INTC intc;
@@ -582,7 +582,7 @@ public class Z80 implements Device {
         return v;
     }
 
-    // -------------------------------------------------------------------------
+    // ----
 
     private static boolean isZero(int v) {
         return v == 0;
@@ -632,42 +632,42 @@ public class Z80 implements Device {
         true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true
     };
 
-    /** overlap */
+    /** overlap 16bit */
     public static int add16bitInternal(int v, int o) {
         return (v + o) & 0xffff;
     }
 
-    /** overlap */
+    /** overlap 16bit */
     public static int inc16bitInternal(int v) {
         return add16bitInternal(v, 1);
     }
 
-    /** overlap */
+    /** overlap 16bit */
     public static int sub16bitInternal(int v, int o) {
         return (v - o) & 0xffff;
     }
 
-    /** overlap */
+    /** overlap 16bit */
     public static int dec16bitInternal(int v) {
         return sub16bitInternal(v, 1);
     }
 
-    /** overlap */
+    /** overlap 8bit */
     public static int add8bitInternal(int v, int o) {
         return (v + o) & 0xff;
     }
 
-    /** overlap */
+    /** overlap 8bit */
     private static int inc8bitInternal(int v) {
         return add8bitInternal(v, 1);
     }
 
-    /** overlap */
+    /** overlap 8bit */
     private static int sub8bitInternal(int v, int o) {
         return (v - o) & 0xff;
     }
 
-    /** overlap */
+    /** overlap 8bit */
     public static int dec8bitInternal(int v) {
         return sub8bitInternal(v, 1);
     }
@@ -715,7 +715,7 @@ private void debug1() {
         pc = w;
     }
 
-    // -------------------------------------------------------------------------
+    // ----
 
     /** */
     private void interruptNonMaskable() {

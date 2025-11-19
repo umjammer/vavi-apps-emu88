@@ -12,6 +12,8 @@ import vavi.apps.em88.Z80;
 /**
  * ZexallTest.
  *
+ * TODO not complete because f register 3,5 bit and IX[HL] registers are not implemented yet
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-06-27 nsano initial version <br>
  */

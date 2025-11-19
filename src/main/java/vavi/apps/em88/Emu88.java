@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -36,8 +35,6 @@ import org.klab.commons.cli.Options;
 import vavi.apps.em88.PC88.Controller;
 import vavi.apps.em88.PC88.RomDao;
 import vavi.apps.em88.PC88.View;
-import vavi.net.www.protocol.URLStreamHandlerUtil;
-import vavi.util.Debug;
 import vavi.util.StringUtil;
 
 
@@ -51,10 +48,6 @@ import vavi.util.StringUtil;
  */
 @Options
 class Emu88 {
-
-    static {
-        URLStreamHandlerUtil.loadService();
-    }
 
     @Option(option = "d", argName = "debug mode")
     boolean debugMode;

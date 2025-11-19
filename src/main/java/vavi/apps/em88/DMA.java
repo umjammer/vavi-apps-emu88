@@ -49,11 +49,11 @@ class DMA implements Device {
     private int status;
 
     /** */
-    private int[] addresses = new int[3];
+    private final int[] addresses = new int[3];
     /** */
-    private int[] counts = new int[3];
+    private final int[] counts = new int[3];
     /** */
-    private int[] modes = new int[3];
+    private final int[] modes = new int[3];
 
     private static final int MODE_VERIFY = 0;
     private static final int MODE_READ = 2;
