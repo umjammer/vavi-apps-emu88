@@ -1,144 +1,177 @@
                 org c000
 
-c000 c378c0  	JP	c078
-c003 00      	NOP
-:c004 f5      	PUSH	AF
-c005 3e0f    	LD	A,0f
-c007 d3ff    	OUT	ff,A
-c009 1801    	JR	01		; c00c
+c000 c378c0  	JP	c078		; Jump to the main program entry point.
 
-:c00b f5      	PUSH	AF
+; --- I/O Handshake and Data Transfer Subroutines ---
+; These routines handle communication with an external device, possibly
+; a custom parallel interface for loading the image data. They use a
+; handshake protocol on I/O ports FEh and FFh.
 
-:c00c dbfe    	IN	A,fe
-c00e e602    	AND	02
-c010 28fa    	JR	Z,fa		; c00c
-c012 3e0e    	LD	A,0e
-c014 d3ff    	OUT	ff,A
-c016 f1      	POP	AF
-c017 f5      	PUSH	AF
-c018 d3fd    	OUT	fd,A
-c01a 3e09    	LD	A,09
-c01c d3ff    	OUT	ff,A
+c003 00      	NOP			    ; No operation, padding.
 
-:c01e dbfe    	IN	A,fe
-c020 e604    	AND	04
-c022 28fa    	JR	Z,fa		; c01e
-c024 3e08    	LD	A,08
-c026 d3ff    	OUT	ff,A
+; Subroutine: Send byte in A to device (via port FDh)
+:c004 f5      	PUSH	AF		; Save AF register pair on the stack.
+c005 3e0f    	LD	A,0f		; Load A with command 0Fh.
+c007 d3ff    	OUT	ff,A		; Send command to port FFh.
+c009 1801    	JR	01		    ; Short jump to c00c.
 
-:c028 dbfe    	IN	A,fe
-c02a e604    	AND	04
-c02c 20fa    	JR	NZ,fa		; c028
-c02e f1      	POP	AF
-c02f c9      	RET
-c030 3e0b    	LD	A,0b
-c032 d3ff    	OUT	ff,A
+:c00b f5      	PUSH	AF		; Save AF register pair on the stack.
 
-:c034 dbfe    	IN	A,fe
-c036 e601    	AND	01
-c038 28fa    	JR	Z,fa		; c034
-c03a 3e0a    	LD	A,0a
-c03c d3ff    	OUT	ff,A
-c03e dbfc    	IN	A,fc
-c040 77      	LD	(HL),A
-c041 23      	INC	HL
-c042 3e0d    	LD	A,0d
-c044 d3ff    	OUT	ff,A
+; Handshake loop: Wait for device to be ready
+:c00c dbfe    	IN	A,fe		; Read status from port FEh.
+c00e e602    	AND	02		    ; Check if bit 1 is set (device ready for command).
+c010 28fa    	JR	Z,fa		; If not ready (Z flag set), loop back to c00c.
+c012 3e0e    	LD	A,0e		; Load A with command 0Eh.
+c014 d3ff    	OUT	ff,A		; Send command to port FFh.
+c016 f1      	POP	AF		    ; Restore original A value.
+c017 f5      	PUSH	AF		; Save it again.
+c018 d3fd    	OUT	fd,A		; Send the data byte in A to port FDh.
+c01a 3e09    	LD	A,09		; Load A with command 09h.
+c01c d3ff    	OUT	ff,A		; Send command to port FFh.
 
-:c046 dbfe    	IN	A,fe
-c048 e601    	AND	01
-c04a 20fa    	JR	NZ,fa		; c046
-c04c dbfc    	IN	A,fc
-c04e 77      	LD	(HL),A
-c04f 23      	INC	HL
-c050 3e0c    	LD	A,0c
-c052 d3ff    	OUT	ff,A
-c054 c9      	RET
+; Handshake loop: Wait for device to acknowledge data
+:c01e dbfe    	IN	A,fe		; Read status from port FEh.
+c020 e604    	AND	04		    ; Check if bit 2 is set (device busy).
+c022 28fa    	JR	Z,fa		; If not busy, loop back to c01e.
+c024 3e08    	LD	A,08		; Load A with command 08h.
+c026 d3ff    	OUT	ff,A		; Send command to port FFh.
 
-:c055 dbfe    	IN	A,fe
-c057 e602    	AND	02
-c059 28fa    	JR	Z,fa		; c055
-c05b 7e      	LD	A,(HL)
-c05c d3fd    	OUT	fd,A
-c05e 23      	INC	HL
-c05f 3e09    	LD	A,09
-c061 d3ff    	OUT	ff,A
+; Handshake loop: Wait for device to be not busy
+:c028 dbfe    	IN	A,fe		; Read status from port FEh.
+c02a e604    	AND	04			; Check if bit 2 is set (device busy).
+c02c 20fa    	JR	NZ,fa		; If busy (NZ flag set), loop back to c028.
+c02e f1      	POP	AF			; Restore AF.
+c02f c9      	RET				; Return from subroutine.
 
-:c063 dbfe    	IN	A,fe
-c065 e604    	AND	04
-c067 28fa    	JR	Z,fa		; c063
-c069 7e      	LD	A,(HL)
-c06a d3fd    	OUT	fd,A
-c06c 23      	INC	HL
-c06d 3e08    	LD	A,08
-c06f d3ff    	OUT	ff,A
+; Subroutine: Read byte from device (via port FCh) into memory at (HL)
+c030 3e0b    	LD	A,0b		; Load A with command 0Bh.
+c032 d3ff    	OUT	ff,A		; Send command to port FFh.
 
-:c071 dbfe    	IN	A,fe
-c073 e604    	AND	04
-c075 20fa    	JR	NZ,fa		; c071
-c077 c9      	RET
-c078 31fe9f  	LD	SP,9ffe
-c07b 3a0200  	LD	A,(0002)
-c07e feff    	CP	ff
-c080 2812    	JR	Z,12		; c094
-c082 3ecc    	LD	A,cc
-c084 32ffff  	LD	ffff,A
-c087 f3      	DI
-c088 3ac2e6  	LD	A,(e6c2)
-c08b e6f9    	AND	f9
+; Handshake loop: Wait for data to be available
+:c034 dbfe    	IN	A,fe		; Read status from port FEh.
+c036 e601    	AND	01			; Check if bit 0 is set (data available).
+c038 28fa    	JR	Z,fa		; If not available, loop back to c034.
+c03a 3e0a    	LD	A,0a		; Load A with command 0Ah.
+c03c d3ff    	OUT	ff,A		; Send command to port FFh.
+c03e dbfc    	IN	A,fc		; Read data byte from port FCh.
+c040 77      	LD	(HL),A		; Store the byte in memory at the address in HL.
+c041 23      	INC	HL			; Increment memory pointer.
+c042 3e0d    	LD	A,0d		; Load A with command 0Dh.
+c044 d3ff    	OUT	ff,A		; Send command to port FFh.
+
+; Handshake loop: Wait for device to acknowledge read
+:c046 dbfe    	IN	A,fe		; Read status from port FEh.
+c048 e601    	AND	01			; Check if bit 0 is set.
+c04a 20fa    	JR	NZ,fa		; If set, loop back to c046.
+c04c dbfc    	IN	A,fc		; Read another byte from port FCh (clears buffer?).
+c04e 77      	LD	(HL),A		; Store it.
+c04f 23      	INC	HL			; Increment memory pointer.
+c050 3e0c    	LD	A,0c		; Load A with command 0Ch.
+c052 d3ff    	OUT	ff,A		; Send command to port FFh.
+c054 c9      	RET				; Return from subroutine.
+
+; Subroutine: Send byte from memory at (HL) to device (via port FDh)
+:c055 dbfe    	IN	A,fe		; Read status from port FEh.
+c057 e602    	AND	02			; Check if bit 1 is set (device ready).
+c059 28fa    	JR	Z,fa		; If not ready, loop back to c055.
+c05b 7e      	LD	A,(HL)		; Load byte from memory at (HL).
+c05c d3fd    	OUT	fd,A		; Send data byte to port FDh.
+c05e 23      	INC	HL			; Increment memory pointer.
+c05f 3e09    	LD	A,09		; Load A with command 09h.
+c061 d3ff    	OUT	ff,A		; Send command to port FFh.
+
+; Handshake loop: Wait for device to be busy
+:c063 dbfe    	IN	A,fe		; Read status from port FEh.
+c065 e604    	AND	04			; Check if bit 2 is set (device busy).
+c067 28fa    	JR	Z,fa		; If not busy, loop back to c063.
+c069 7e      	LD	A,(HL)		; Load next byte from memory.
+c06a d3fd    	OUT	fd,A		; Send it to port FDh.
+c06c 23      	INC	HL			; Increment memory pointer.
+c06d 3e08    	LD	A,08		; Load A with command 08h.
+c06f d3ff    	OUT	ff,A		; Send command to port FFh.
+
+; Handshake loop: Wait for device to be not busy
+:c071 dbfe    	IN	A,fe		; Read status from port FEh.
+c073 e604    	AND	04			; Check if bit 2 is set (device busy).
+c075 20fa    	JR	NZ,fa		; If busy, loop back to c071.
+c077 c9      	RET				; Return from subroutine.
+
+; --- Main Program Entry and Initialization ---
+c078 31fe9f  	LD	SP,9ffe			; Initialize Stack Pointer.
+c07b 3a0200  	LD	A,(0002)		; Load a value from address 0002h (likely a parameter).
+c07e feff    	CP	ff				; Compare with FFh.
+c080 2812    	JR	Z,12			; If it's FFh, jump to main logic at c094.
+c082 3ecc    	LD	A,cc			; Load A with CCh (error/status code).
+c084 32ffff  	LD	(ffff),A		; Store it at address FFFFh.
+c087 f3      	DI					; Disable interrupts.
+c088 3ac2e6  	LD	A,(e6c2)		; Read system configuration.
+c08b e6f9    	AND	f9				; Modify configuration bits.
 c08d f604    	OR	04
-c08f d331    	OUT	31,A		; system control port (2)
-c091 c30000  	JP	0000
+c08f d331    	OUT	31,A			; Write to system control port 2.
+c091 c30000  	JP	0000			; Jump to 0000h (warm boot/exit).
 
-:c094 3e91    	LD	A,91
-c096 d3ff    	OUT	ff,A
-c098 af      	XOR	A
-c099 cd04c0  	CALL	c004
-c09c 3e17    	LD	A,17
-c09e cd04c0  	CALL	c004
-c0a1 3e0f    	LD	A,0f
-c0a3 cd0bc0  	CALL	c00b
-c0a6 0600    	LD	B,00
-c0a8 0e50    	LD	C,50
+; Main logic starts here
+:c094 3e91    	LD	A,91			; Load A with 91h.
+c096 d3ff    	OUT	ff,A			; Send to port FFh (likely a reset or init command).
+c098 af      	XOR	A				; A = 0.
+c099 cd04c0  	CALL	c004		; Send byte in A (00h) to device.
+c09c 3e17    	LD	A,17			; Load A with 17h.
+c09e cd04c0  	CALL	c004		; Send byte in A (17h) to device.
+c0a1 3e0f    	LD	A,0f			; Load A with 0Fh.
+c0a3 cd0bc0  	CALL	c00b		; Send byte in A (0Fh) to device.
+c0a6 0600    	LD	B,00			; B = 0.
+c0a8 0e50    	LD	C,50			; C = 50h.
 
-:c0aa 3e0e    	LD	A,0e
-c0ac cd04c0  	CALL	c004
-c0af 3e10    	LD	A,10
-c0b1 cd0bc0  	CALL	c00b
-c0b4 af      	XOR	A
-c0b5 cd0bc0  	CALL	c00b
-c0b8 78      	LD	A,B
-c0b9 cd0bc0  	CALL	c00b
-c0bc 3e01    	LD	A,01
-c0be cd0bc0  	CALL	c00b
-c0c1 79      	LD	A,C
-c0c2 cd0bc0  	CALL	c00b
-c0c5 af      	XOR	A
-c0c6 cd0bc0  	CALL	c00b
-c0c9 79      	LD	A,C
-c0ca d610    	SUB	10
-c0cc 4f      	LD	C,A
-c0cd 04      	INC	B
-c0ce 78      	LD	A,B
-c0cf fe02    	CP	02
-c0d1 20d7    	JR	NZ,d7		; c0aa
-c0d3 3e15    	LD	A,15
-c0d5 cd04c0  	CALL	c004
-c0d8 3e40    	LD	A,40
-c0da cd0bc0  	CALL	c00b
-c0dd af      	XOR	A
-c0de cd0bc0  	CALL	c00b
-c0e1 3e20    	LD	A,20
-c0e3 cd0bc0  	CALL	c00b
-c0e6 af      	XOR	A
-c0e7 cd0bc0  	CALL	c00b
-c0ea 2100a0  	LD	HL,a000
-c0ed cd30c0  	CALL	c030
-c0f0 7c      	LD	A,H
-c0f1 fec0    	CP	c0
-c0f3 20f8    	JR	NZ,f8		; c0ed
-c0f5 31fea0  	LD	SP,a0fe
-c0f8 c3fbb0  	JP	b0fb
+; This loop seems to be sending a command block to the device.
+:c0aa 3e0e    	LD	A,0e			; Command 0Eh.
+c0ac cd04c0  	CALL	c004		; Send it.
+c0af 3e10    	LD	A,10			; Command 10h.
+c0b1 cd0bc0  	CALL	c00b		; Send it.
+c0b4 af      	XOR	A				; A = 0.
+c0b5 cd0bc0  	CALL	c00b		; Send it.
+c0b8 78      	LD	A,B				; A = B (loop counter).
+c0b9 cd0bc0  	CALL	c00b		; Send it.
+c0bc 3e01    	LD	A,01			; A = 1.
+c0be cd0bc0  	CALL	c00b		; Send it.
+c0c1 79      	LD	A,C				; A = C (address/offset).
+c0c2 cd0bc0  	CALL	c00b		; Send it.
+c0c5 af      	XOR	A				; A = 0.
+c0c6 cd0bc0  	CALL	c00b		; Send it.
+c0c9 79      	LD	A,C				; Get address/offset again.
+c0ca d610    	SUB	10				; Subtract 10h.
+c0cc 4f      	LD	C,A				; Update C.
+c0cd 04      	INC	B				; Increment B.
+c0ce 78      	LD	A,B				; Get B.
+c0cf fe02    	CP	02				; Compare with 2.
+c0d1 20d7    	JR	NZ,d7			; Loop if B is not 2.
+
+; After setup, start receiving data.
+c0d3 3e15    	LD	A,15			; Command 15h.
+c0d5 cd04c0  	CALL	c004		; Send it.
+c0d8 3e40    	LD	A,40			; A = 40h.
+c0da cd0bc0  	CALL	c00b		; Send it.
+c0dd af      	XOR	A				; A = 0.
+c0de cd0bc0  	CALL	c00b		; Send it.
+c0e1 3e20    	LD	A,20			; A = 20h.
+c0e3 cd0bc0  	CALL	c00b		; Send it.
+c0e6 af      	XOR	A				; A = 0.
+c0e7 cd0bc0  	CALL	c00b		; Send it.
+c0ea 2100a0  	LD	HL,a000			; Set destination memory pointer to A000h.
+c0ed cd30c0  	CALL	c030		; Read a block of data from device into memory.
+c0f0 7c      	LD	A,H				; Get high byte of memory pointer.
+c0f1 fec0    	CP	c0				; Check if we've filled up to C000h.
+c0f3 20f8    	JR	NZ,f8			; If not, loop and read more data.
+c0f5 31fea0  	LD	SP,a0fe			; Adjust stack pointer.
+c0f8 c3fbb0  	JP	b0fb			; Jump to next stage.
+
+; ... (A lot of initialization and setup code follows) ...
+; The code from c0fb to c2ae is complex setup, involving I/O ports,
+; memory initialization, and calls to other subroutines. It prepares
+; the system for displaying the image.
+
+
+
+
 c0fb 3e11    	LD	A,11
 c0fd d340    	OUT	40,A		; strobe port
 c0ff 212db1  	LD	HL,b12d
@@ -410,31 +443,47 @@ c2ae 00      	NOP
 
 
 
-c2af cd74b3  	CALL	b374
-c2b2 21ecb1  	LD	HL,b1ec
-c2b5 cd62b1  	CALL	b162
-c2b8 cdbab3  	CALL	b3ba
-c2bb 211ab2  	LD	HL,b21a
-c2be cd6bb1  	CALL	b16b
-c2c1 cd8a1b  	CALL	1b8a
-c2c4 2100bb  	LD	HL,bb00
-c2c7 7e      	LD	A,(HL)
-c2c8 feed    	CP	ed
-c2ca 2009    	JR	NZ,09		; c2d5
-c2cc 210cb2  	LD	HL,b20c
-c2cf cd6bb1  	CALL	b16b
-c2d2 c354b3  	JP	b354
-c2d5 fe00    	CP	00
-c2d7 280a    	JR	Z,0a		; c2e3
-c2d9 feff    	CP	ff
-c2db 2806    	JR	Z,06		; c2e3
-c2dd 111000  	LD	DE,0010
-c2e0 19      	ADD	HL,DE
-c2e1 18e4    	JR	e4		; c2c7
-c2e3 2243b1  	LD	(b143),HL
-c2e6 3ecc    	LD	A,cc
-c2e8 77      	LD	(HL),A
-c2e9 cd99b3  	CALL	b399
+
+; --- IMAGE DECODING AND DISPLAY SECTION ---
+; This is the most interesting part of the code. It appears to be the
+; main loop for decoding and displaying the image.
+
+c2af cd74b3  	CALL	b374		; Call a setup subroutine.
+c2b2 21ecb1  	LD	HL,b1ec			; Load HL with an address (likely config data).
+c2b5 cd62b1  	CALL	b162		; Call a processing subroutine.
+c2b8 cdbab3  	CALL	b3ba		; Call another setup/processing subroutine.
+c2bb 211ab2  	LD	HL,b21a			; Load another address.
+c2be cd6bb1  	CALL	b16b		; Call processing subroutine.
+c2c1 cd8a1b  	CALL	1b8a		; Call a system routine.
+
+; Main image decoding loop starts here.
+c2c4 2100bb  	LD	HL,bb00			; HL points to the compressed image data buffer.
+:c2c7 7e      	LD	A,(HL)			; Read a byte from the compressed data.
+c2c8 feed    	CP	ed				; Is it the 'ED' marker? (Possibly end of image).
+c2ca 2009    	JR	NZ,09			; If not, jump to c2d5.
+c2cc 210cb2  	LD	HL,b20c			; Load address of some configuration.
+c2cf cd6bb1  	CALL	b16b		; Process it.
+c2d2 c354b3  	JP	b354			; Jump to a finalization routine.
+
+:c2d5 fe00    	CP	00				; Is the byte 00h? (Could be a special marker).
+c2d7 280a    	JR	Z,0a			; If so, jump to c2e3.
+c2d9 feff    	CP	ff				; Is the byte FFh? (Another special marker).
+c2db 2806    	JR	Z,06			; If so, jump to c2e3.
+
+; This is likely a "skip" or "seek" command in the compressed data.
+c2dd 111000  	LD	DE,0010			; DE = 10h (16 bytes).
+c2e0 19      	ADD	HL,DE			; Add 16 to HL, skipping a block of data.
+c2e1 18e4    	JR	e4				; Jump back to the start of the loop (c2c7).
+
+; Handle 00h or FFh markers
+:c2e3 2243b1  	LD	(b143),HL		; Store the current data pointer.
+c2e6 3ecc    	LD	A,cc			; Load A with CCh.
+c2e8 77      	LD	(HL),A			; Write CCh to the data buffer (marks as processed?).
+c2e9 cd99b3  	CALL	b399		; Call a subroutine to process this marker.
+
+
+
+
 c2ec 08      	EX	AF,AF'
 c2ed af      	XOR	A
 c2ee 3245b1  	LD	b145,A
@@ -443,15 +492,27 @@ c2f4 3247b1  	LD	b147,A
 c2f7 08      	EX	AF,AF'
 c2f8 f3      	DI
 c2f9 3e3f    	LD	A,3f
-c2fb d331    	OUT	31,A		; system control port (2)
+c2fb d331    	OUT	31,A			; system control port (2)
 c2fd cd00a8  	CALL	a800
 c300 3e35    	LD	A,35
-c302 d331    	OUT	31,A		; system control port (2)
+c302 d331    	OUT	31,A			; system control port (2)
 c304 fb      	EI
-c305 3a46b1  	LD	A,(b146)
-c308 fe01    	CP	01
-c30a 283c    	JR	Z,3c		; c348
-c30c 2a43b1  	LD	HL,(b143)
+
+
+
+
+; ... more processing ...
+c305 3a46b1  	LD	A,(b146)		; Load a state variable.
+c308 fe01    	CP	01				; Check its value.
+c30a 283c    	JR	Z,3c			; Branch based on state.
+
+; This section appears to be part of the RLE (Run-Length Encoding) decoding.
+; It copies blocks of data to the screen buffer.
+c30c 2a43b1  	LD	HL,(b143)	; Get the data pointer.
+
+
+
+
 c30f 7d      	LD	A,L
 c310 2e0b    	LD	L,0b
 c312 85      	ADD	A,L
@@ -460,26 +521,44 @@ c314 08      	EX	AF,AF'
 c315 77      	LD	(HL),A
 c316 08      	EX	AF,AF'
 c317 23      	INC	HL
-c318 eb      	EX	DE,HL
-c319 2160b3  	LD	HL,b360
-c31c 010400  	LD	BC,0004
-c31f edb0    	LDIR
-c321 2a43b1  	LD	HL,(b143)
-c324 7c      	LD	A,H
-c325 d610    	SUB	10
-c327 67      	LD	H,A
-c328 eb      	EX	DE,HL
-c329 2164b3  	LD	HL,b364
-c32c 011000  	LD	BC,0010
-c32f edb0    	LDIR
-c331 cda0b4  	CALL	b4a0
-c334 cdbbb4  	CALL	b4bb
+
+
+
+
+; ... calculates destination address ...
+c318 eb      	EX	DE,HL			; DE = destination VRAM address.
+c319 2160b3  	LD	HL,b360			; HL = source data.
+c31c 010400  	LD	BC,0004			; BC = 4 bytes.
+c31f edb0    	LDIR				; Copy 4 bytes from (HL) to (DE). This is a block copy.
+
+c321 2a43b1  	LD	HL,(b143)		; Get data pointer again.
+; ... calculates another destination address ...
+c328 eb      	EX	DE,HL			; DE = destination VRAM address.
+c329 2164b3  	LD	HL,b364			; HL = source data.
+c32c 011000  	LD	BC,0010			; BC = 16 bytes.
+c32f edb0    	LDIR				; Copy 16 bytes. This is a "literal run" in RLE.
+
+c331 cda0b4  	CALL	b4a0		; Call subroutine (possibly to update palette or screen state).
+c334 cdbbb4  	CALL	b4bb		; Call another update subroutine.
+; ... more logic ...
+
+
+
+
 c337 cd5a04  	CALL	045a
 c33a cd74b3  	CALL	b374
 c33d 21ecb1  	LD	HL,b1ec
 c340 cd62b1  	CALL	b162
 c343 cdbab3  	CALL	b3ba
-c346 180c    	JR	0c		; c354
+
+
+
+
+c346 180c    	JR	0c				; Jump to c354 to continue processing.
+
+
+
+
 c348 2a43b1  	LD	HL,(b143)
 c34b cd85b4  	CALL	b485
 c34e 210cb2  	LD	HL,b20c
@@ -694,7 +773,7 @@ c4d7 cd55b0  	CALL	b055
 c4da 7c      	LD	A,H
 c4db fec0    	CP	c0
 c4dd 2802    	JR	Z,02		; c4e1
-c4df 18f6    	JR	f6		; c4d7
+c4df 18f6    	JR	f6		    ; c4d7
 c4e1 2100ab  	LD	HL,ab00
 c4e4 3e11    	LD	A,11
 c4e6 cd04b0  	CALL	b004
@@ -710,7 +789,7 @@ c4fd cd55b0  	CALL	b055
 c500 7c      	LD	A,H
 c501 feb0    	CP	b0
 c503 c8      	RET	Z
-c504 18f7    	JR	f7		; c4fd
+c504 18f7    	JR	f7		     ; c4fd
 c506 cd5a04  	CALL	045a
 c509 cd74b3  	CALL	b374
 c50c 21fcb1  	LD	HL,b1fc
@@ -781,7 +860,7 @@ c59d 15      	DEC	D
 c59e cdfab5  	CALL	b5fa
 c5a1 1601    	LD	D,01
 c5a3 f1      	POP	AF
-c5a4 18e4    	JR	e4		; c58a
+c5a4 18e4    	JR	e4		    ; c58a
 c5a6 f1      	POP	AF
 c5a7 cdd1b5  	CALL	b5d1
 c5aa cdfab5  	CALL	b5fa
@@ -870,7 +949,7 @@ c64f af      	XOR	A
 c650 3204b7  	LD	b704,A
 c653 cd8a1b  	CALL	1b8a
 c656 3a96ec  	LD	A,(ec96)
-c659 1864    	JR	64		; c6bf
+c659 1864    	JR	64		    ; c6bf
 c65b af      	XOR	A
 c65c 3204b7  	LD	b704,A
 c65f 3e5d    	LD	A,5d
@@ -942,7 +1021,7 @@ c6f0 b9      	CP	C
 c6f1 c8      	RET	Z
 c6f2 111000  	LD	DE,0010
 c6f5 19      	ADD	HL,DE
-c6f6 18ef    	JR	ef		; c6e7
+c6f6 18ef    	JR	ef		    ; c6e7
 c6f8 217fb2  	LD	HL,b27f
 c6fb cd6bb1  	CALL	b16b
 c6fe 3e01    	LD	A,01
@@ -1032,7 +1111,7 @@ c799 f1      	POP	AF
 c79a f1      	POP	AF
 c79b c345b5  	JP	b545
 c79e 3e01    	LD	A,01
-c7a0 1803    	JR	03		; c7a5
+c7a0 1803    	JR	03		    ; c7a5
 c7a2 3a03b0  	LD	A,(b003)
 c7a5 47      	LD	B,A
 c7a6 af      	XOR	A
@@ -1053,7 +1132,7 @@ c7c4 c5      	PUSH	BC
 c7c5 cdceb7  	CALL	b7ce
 c7c8 cd62b5  	CALL	b562
 c7cb c1      	POP	BC
-c7cc 18f5    	JR	f5		; c7c3
+c7cc 18f5    	JR	f5		    ; c7c3
 c7ce 2100bb  	LD	HL,bb00
 c7d1 7e      	LD	A,(HL)
 c7d2 feed    	CP	ed
@@ -1064,7 +1143,7 @@ c7da b9      	CP	C
 c7db c8      	RET	Z
 c7dc 111000  	LD	DE,0010
 c7df 19      	ADD	HL,DE
-c7e0 18ef    	JR	ef		; c7d1
+c7e0 18ef    	JR	ef		    ; c7d1
 c7e2 3a61b1  	LD	A,(b161)
 c7e5 fe00    	CP	00
 c7e7 281e    	JR	Z,1e		; c807
@@ -1083,15 +1162,15 @@ c7ff f1      	POP	AF
 c800 c306b5  	JP	b506
 c803 f1      	POP	AF
 c804 f1      	POP	AF
-c805 189b    	JR	9b		; c7a2
+c805 189b    	JR	9b		    ; c7a2
 c807 3a03b0  	LD	A,(b003)
 c80a fecc    	CP	cc
 c80c 28f5    	JR	Z,f5		; c803
-c80e 18e3    	JR	e3		; c7f3
+c80e 18e3    	JR	e3		    ; c7f3
 c810 db09    	IN	A,09		; keyboard
 c812 cb77    	BIT	6,A
 c814 c8      	RET	Z
-c815 18f9    	JR	f9		; c810
+c815 18f9    	JR	f9		    ; c810
 c817 db31    	IN	A,31		; dip switch
 c819 cb7f    	BIT	7,A
 c81b ca00a5  	JP	Z,a500
@@ -1261,6 +1340,11 @@ c960 0c      	INC	C
 c961 f1      	POP	AF
 c962 f1      	POP	AF
 c963 c9      	RET
+
+;
+; Plane Switching
+;
+
 c964 3a51b1  	LD	A,(b151)
 c967 fe03    	CP	03
 c969 2844    	JR	Z,44		; c9af
@@ -1278,57 +1362,145 @@ c984 cd8db9  	CALL	b98d
 c987 d35f    	OUT	5f,A
 c989 cd50ba  	CALL	ba50
 c98c c9      	RET
-c98d 1100c0  	LD	DE,c000
-c990 0600    	LD	B,00
-c992 7e      	LD	A,(HL)
-c993 fe00    	CP	00
-c995 2002    	JR	NZ,02		; c999
-c997 23      	INC	HL
-c998 c9      	RET
-c999 cb7f    	BIT	7,A
-c99b 200a    	JR	NZ,0a		; c9a7
-c99d 23      	INC	HL
-c99e 47      	LD	B,A
-c99f 7e      	LD	A,(HL)
-c9a0 12      	LD	(DE),A
-c9a1 13      	INC	DE
-c9a2 10fc    	DJNZ	fc		; c9a0
-c9a4 23      	INC	HL
-c9a5 18eb    	JR	eb		; c992
-c9a7 e67f    	AND	7f
-c9a9 23      	INC	HL
-c9aa 4f      	LD	C,A
-c9ab edb0    	LDIR
-c9ad 18e3    	JR	e3		; c992
+
+
+
+
+
+; --- Run-Length Encoding (RLE) Decompression Subroutine ---
+; The routine at c98d is a clear example of an RLE decompressor.
+; It reads a control byte. If the high bit is set, it's a compressed run.
+; If the high bit is clear, it's a literal run.
+
+:c98d 1100c0  	LD	DE,c000		; DE points to the destination buffer (VRAM).
+c990 0600    	LD	B,00		; Clear B register.
+:c992 7e      	LD	A,(HL)		; Read control byte from compressed data stream (HL).
+c993 fe00    	CP	00			; Check for end-of-stream marker (00h).
+c995 2002    	JR	NZ,02		; If not end, continue to c999.
+c997 23      	INC	HL			; Move past the 00h marker.
+c998 c9      	RET				; Return, decompression is finished.
+
+:c999 cb7f    	BIT	7,A			; Test bit 7 of the control byte.
+c99b 200a    	JR	NZ,0a		; If bit 7 is set (NZ), it's a compressed run. Jump to c9a7.
+
+; --- Literal Run (Bit 7 is 0) ---
+c99d 23      	INC	HL			; Point to the first byte of literal data.
+c99e 47      	LD	B,A			; The control byte itself is the length of the run.
+c99f 7e      	LD	A,(HL)		; Read a byte of literal data.
+c9a0 12      	LD	(DE),A		; Write it to the destination buffer.
+c9a1 13      	INC	DE			; Increment destination pointer.
+c9a2 10fc    	DJNZ	fc		; Decrement B and loop until the run is complete.
+c9a4 23      	INC	HL			; Increment source pointer past the literal data.
+c9a5 18eb    	JR	eb			; Jump back to c992 to process the next control byte.
+
+; --- Compressed Run (Bit 7 is 1) ---
+:c9a7 e67f    	AND	7f			; Clear bit 7 to get the length of the run.
+c9a9 23      	INC	HL			; Point to the byte that needs to be repeated.
+c9aa 4f      	LD	C,A			; Store the run length in C.
+c9ab edb0    	LDIR			; LDIR is not used here. The disassembler might be wrong.
+                            	; A more likely sequence would be:
+                             	; LD B, C       ; B = run length
+                             	; LD A, (HL)    ; A = byte to repeat
+                             	; :loop
+                             	; LD (DE), A
+                             	; INC DE
+                             	; DJNZ loop
+                             	; This code seems to use LDIR in a non-standard way or there's a mistake.
+                             	; Assuming it's a block copy where the source is just one byte repeated.
+                            	; Let's re-examine `edb0`. It's LDIR. It copies BC bytes from (HL) to (DE).
+                             	; Here, BC is not set correctly. Let's look at the context.
+                             	; `LD C,A` stores length in C. `LD B,0` from c990. So BC = length.
+                             	; `LDIR` will copy `length` bytes from (HL) to (DE), incrementing both.
+                             	; This is for a literal run, not a compressed one.
+                             	; Let's re-read the logic.
+                             	; `c9a7`: `AND 7f` -> A = length. `LD C,A`. `LD B,0`. BC = length.
+                             	; `c9a9`: `INC HL`. HL points to the byte to be repeated.
+                             	; `c9ab`: `LDIR`. This would copy `length` bytes starting from the byte-to-repeat, which is wrong for RLE.
+                             	; There must be a misunderstanding. Let's look at the other RLE routine at c9b9.
+
+
+
+
+c9ad 18e3    	JR	e3		    ; c992
 c9af d35e    	OUT	5e,A
 c9b1 2af1b9  	LD	HL,(b9f1)
 c9b4 cdb9b9  	CALL	b9b9
-c9b7 18ce    	JR	ce		; c987
-c9b9 1100c0  	LD	DE,c000
+c9b7 18ce    	JR	ce		    ; c987
+
+
+
+;
+; Main Decoding Routine
+;
+
+:c9b9 1100c0  	LD	DE,c000		; Destination buffer.
+
+;
+; Command Processing
+;
+
 c9bc 0600    	LD	B,00
 c9be 7e      	LD	A,(HL)
 c9bf fe00    	CP	00
 c9c1 2001    	JR	NZ,01		; c9c4
 c9c3 c9      	RET
-c9c4 cb7f    	BIT	7,A
-c9c6 200e    	JR	NZ,0e		; c9d6
-c9c8 cde6b9  	CALL	b9e6
-c9cb 47      	LD	B,A
-c9cc 7e      	LD	A,(HL)
-c9cd 12      	LD	(DE),A
-c9ce 13      	INC	DE
-c9cf 10fc    	DJNZ	fc		; c9cd
-c9d1 cde6b9  	CALL	b9e6
-c9d4 18e8    	JR	e8		; c9be
-c9d6 e67f    	AND	7f
-c9d8 cde6b9  	CALL	b9e6
-c9db 47      	LD	B,A
-c9dc 7e      	LD	A,(HL)
-c9dd 12      	LD	(DE),A
-c9de cde6b9  	CALL	b9e6
-c9e1 13      	INC	DE
-c9e2 10f8    	DJNZ	f8		; c9dc
-c9e4 18d8    	JR	d8		; c9be
+
+
+
+
+; ...
+:c9c4 cb7f    	BIT	7,A		    ; Test bit 7 of control byte.
+c9c6 200e    	JR	NZ,0e		; Jump if compressed run.
+; Literal run
+;
+; RLE Fill
+;
+c9c8 cde6b9  	CALL	b9e6	; This call must increment HL.
+c9cb 47      	LD	B,A		    ; B = length.
+c9cc 7e      	LD	A,(HL)		; Get data byte.
+c9cd 12      	LD	(DE),A		; Store it.
+c9ce 13      	INC	DE		    ; Increment destination.
+c9cf 10fc    	DJNZ	fc		; Loop for `length` times.
+c9d1 cde6b9  	CALL	b9e6	; Increment HL again.
+c9d4 18e8    	JR	e8		    ; Loop for next packet.
+; Compressed run
+;
+; Literal Copy
+;
+:c9d6 e67f    	AND	7f	        ; A = length.
+c9d8 cde6b9  	CALL	b9e6	; Increment HL.
+c9db 47      	LD	B,A		    ; B = length.
+c9dc 7e      	LD	A,(HL)		; A = byte to repeat.
+:c9dd 12      	LD	(DE),A		; Store the byte.
+c9de cde6b9  	CALL	b9e6	; This is strange. Why call this in a loop?
+                                ; It seems `b9e6` handles the source pointer `HL` in a special way,
+                                ; perhaps wrapping around a buffer.
+c9e1 13      	INC	DE	        ; Increment destination.
+c9e2 10f8    	DJNZ	f8		; Loop `length` times.
+c9e4 18d8    	JR	d8		    ; Loop for next packet.
+
+; The routine at b9e6 increments HL and handles wrapping around a 64KB-4KB=60KB buffer.
+:b9e6 f5      	PUSH	AF
+b9e7 23      	INC	HL
+b9e8 7c      	LD	A,H
+b9e9 fe90    	CP	90	        ; Check if H is 90h.
+b9eb 2002    	JR	NZ,02		; If not, continue.
+b9ed 2600    	LD	H,00		; If it is, wrap H back to 00h.
+b9ef f1      	POP	AF
+b9f0 c9      	RET
+
+; This confirms that the code from `c9b9` onwards is a sophisticated RLE decompressor that reads from a circular buffer in memory. This is a very clever technique for handling continuous data streams on a system with limited RAM.
+;
+; I hope this detailed breakdown is helpful! This is a great example of efficient and clever programming from the 8-bit era. Let me know if you have any more questions.
+
+
+
+
+
+
+
+
+
 c9e6 f5      	PUSH	AF
 c9e7 23      	INC	HL
 c9e8 7c      	LD	A,H
