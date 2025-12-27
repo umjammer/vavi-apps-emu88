@@ -5,7 +5,9 @@
 
 # vavi-apps-emu88
 
-PC-8801 emulator．
+<img alt="logo" src="src/test/resources/logo.png" width="200" />&nbsp;&nbsp;<sub><a href="https://www.nec.com/">© NEC</a></sub>
+
+PC-8801mkII emulator．
 
 ## Install
 
@@ -17,6 +19,8 @@ PC-8801 emulator．
 
 * https://github.com/javaemus/consoleflex056
 * https://github.com/mamedev/mame/tree/master/src/lib/formats
+* https://archive.org/details/PCTechknow8801Vol.11982
+* https://github.com/jnode/jnode (hardware codes inside, floppy, cdrom etc.)
 
 ## TODO
 
