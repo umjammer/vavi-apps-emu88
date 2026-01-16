@@ -516,6 +516,8 @@ public class Z80 implements Device {
 
     /** used cycles */
     private int cost;
+    private long totalCost = 0;
+    private static final int VRTC_INTERVAL = 65536; // approx 16ms at 4MHz
 
     /** emulation z80 fetch, decode, execute */
     public void execute(int address) {
@@ -533,12 +535,30 @@ public class Z80 implements Device {
             for (int c = 0; c < steps && !broken; c++) {
                 fireListener(this);
                 exec();
+                totalCost += cost;
+                if (totalCost >= VRTC_INTERVAL) {
+                    totalCost -= VRTC_INTERVAL;
+                    int currentValue = bus.peekb(0xef3e);
+                    if (currentValue > 0) {
+                        bus.pokeb(0xef3e, currentValue - 1);
+                    }
+                    intc.requestInterrupt(0);
+                }
                 processInterrupt();
             }
         } else {
             while (!broken) {
                 fireListener(this);
                 exec();
+                totalCost += cost;
+                if (totalCost >= VRTC_INTERVAL) {
+                    totalCost -= VRTC_INTERVAL;
+                    int currentValue = bus.peekb(0xef3e);
+                    if (currentValue > 0) {
+                        bus.pokeb(0xef3e, currentValue - 1);
+                    }
+                    intc.requestInterrupt(0);
+                }
                 processInterrupt();
             }
         }
@@ -549,16 +569,20 @@ public class Z80 implements Device {
     /** */
     private void processInterrupt() {
         if (interrupted) {
-            intc.acknowledgeInterrupt();
-            if (iff1) {
-                if (nmi) {
-                    interruptNonMaskable();
-                } else {
-                    interrupt();
-                }
+            if (nmi) {
+                // NMI is always serviced regardless of iff1
+                intc.acknowledgeInterrupt(); // This might be wrong for NMI, but let's assume it's needed for now.
+                interruptNonMaskable();
+                interrupted = false;
+                nmi = false;
+            } else if (iff1) {
+                // Maskable interrupt is serviced only if iff1 is true
+                intc.acknowledgeInterrupt();
+                interrupt();
+                interrupted = false;
             }
-            interrupted = false;
-            nmi = false;
+            // If it's a maskable interrupt and iff1 is false, we do nothing.
+            // The 'interrupted' flag remains true, and we'll try again on the next instruction.
         }
     }
 
@@ -2231,12 +2255,19 @@ private void debug1() {
             }
             case 0x00 -> // nop
                     cost = 4;
-            case 0x76 -> {
+            case 0x76 -> { // HALT
                 cost = 4;
                 logger.log(Level.INFO, "halt: %4x".formatted(dec16bitInternal(pc)));
-                while (!broken) {
-//                    r = add8bitInternal(xxx); // TODO check
-                    Thread.yield();
+                while (!interrupted && !broken) {
+                    try {
+                        Thread.sleep(1); // Sleep to avoid busy-waiting
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+                if (interrupted) {
+                    pc = inc16bitInternal(pc); // The PC should advance past the HALT on interrupt
                 }
             }
 

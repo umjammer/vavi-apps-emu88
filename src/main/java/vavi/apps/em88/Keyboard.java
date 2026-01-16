@@ -37,8 +37,12 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
     private Bus bus;
 
     /** */
+    private INTC intc;
+
+    /** */
     public void setBus(Bus bus) {
         this.bus = bus;
+        this.intc = (INTC) bus.getDevice(INTC.class.getName());
     }
 
     //----
@@ -175,6 +179,7 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
 
     /** */
     public void keyPressed(KeyEvent ev) {
+        // logger.log(Level.DEBUG, "Keyboard.keyPressed: " + ev.getKeyCode());
         switch (ev.getKeyCode()) {
         // 00
         case KeyEvent.VK_NUMPAD0:
@@ -219,9 +224,25 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
             break;
 //      case KeyEvent.: keyPort[1] &= ~RK_NUMPAD_COMMA; break;
 //      case KeyEvent.: keyPort[1] &= ~RK_NUMPAD_PERIOD; break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[1] &= ~RK_ENTER;
+//            break;
+//        case KeyEvent.VK_ENTER:
+//            logger.log(Level.DEBUG, "Hack: Mapping Enter to 'A'");
+//            keyPort[2] &= ~RK_A;
+//            break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[1] &= ~RK_ENTER;
+//            break;
         case KeyEvent.VK_ENTER:
             keyPort[1] &= ~RK_ENTER;
             break;
+//        case KeyEvent.VK_ENTER:
+//            // Simulate Ctrl + M (ASCII CR)
+//            logger.log(Level.DEBUG, "Hack: Mapping Enter to 'Ctrl + M'");
+//            keyPort[3] &= ~RK_M;
+//            keyPort[8] &= ~RK_CONTROL;
+//            break;
         // 02
         case KeyEvent.VK_AT:
             keyPort[2] &= ~RK_AT;
@@ -454,6 +475,7 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
     }
 
     /** */
+    /** */
     public void keyReleased(KeyEvent ev) {
         //logger.log(Level.TRACE, ev.getKeyCode());
         switch (ev.getKeyCode()) {
@@ -500,9 +522,19 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
             break;
         // case KeyEvent.: keyPort[1] |= RK_NUMPAD_COMMA; break;
         // case KeyEvent.: keyPort[1] |= RK_NUMPAD_PERIOD; break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[1] |= RK_ENTER;
+//            break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[1] |= RK_ENTER;
+//            break;
         case KeyEvent.VK_ENTER:
             keyPort[1] |= RK_ENTER;
             break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[3] |= RK_M;
+//            keyPort[8] |= RK_CONTROL;
+//            break;
         // 02
         case KeyEvent.VK_AT:
             keyPort[2] |= RK_AT;

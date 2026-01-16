@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.StringTokenizer;
 
 import vavi.util.StringUtil;
@@ -24,6 +26,8 @@ import vavi.util.StringUtil;
  *          1.00 031228 nsano java porting <br>
  */
 public class Debugger implements Device {
+
+    private static final Logger logger = System.getLogger(Debugger.class.getName());
 
     /** */
     private Z80 z80;
@@ -53,15 +57,15 @@ public class Debugger implements Device {
 
     /** */
     private void displayRegs() {
-        System.out.println(
-            "PC=" + StringUtil.toHex4(z80.getPC()) +
-            " A=" + StringUtil.toHex2(z80.getA()) +
-            " BC=" + StringUtil.toHex4(z80.getBC()) +
-            " DE=" + StringUtil.toHex4(z80.getDE()) +
-            " HL=" + StringUtil.toHex4(z80.getHL()) +
-            " SP=" + StringUtil.toHex4(z80.getSP()) +
-            " IX=" + StringUtil.toHex4(z80.getIX()) +
-            " IY=" + StringUtil.toHex4(z80.getIY()) +
+        logger.log(Level.DEBUG, 
+            "PC=%04x".substring(z80.getPC()) +
+            " A=%02x".formatted(z80.getA()) +
+            " BC=%04x".formatted(z80.getBC()) +
+            " DE=%04x".formatted(z80.getDE()) +
+            " HL=%04x".formatted(z80.getHL()) +
+            " SP=%04x".formatted(z80.getSP()) +
+            " IX=%04x".formatted(z80.getIX()) +
+            " IY=%04x".formatted(z80.getIY()) +
             " C:" + (z80.isC() ? 1 : 0) +
             " N:" + (z80.isN() ? 1 : 0) +
             " P:" + (z80.isP() ? 1 : 0) +
@@ -71,39 +75,40 @@ public class Debugger implements Device {
     }
 
     private void help() {
-        System.err.println(
-                "x[rr=nn]\tchange register\n" +
-                "d[nn]\t\tdump memory\n" +
-                "e[nn]\t\twrite memory\n" +
-                "l[nn]\t\tdisassemble\n" +
-                "g[nn]\t\tgo\n" +
-                "t[nn]\t\ttrace nn times (visible)\n" +
-                "u[nn]\t\ttrace nn times (invisible)\n" +
-                "p\t\tpassing trace\n" +
-                "RET\t\ttrace once\n" +
-                "b[nn]\t\tset/display break points\n" +
-                "ip\t\tinput from port p\n" +
-                "op,n\t\toutput n to port p\n" +
-                "r,filename,nn\tread file to address nn\n" +
-                "!\t\tshell command\n" +
-                "h/?\t\thelp\n" +
-                "q\t\tquit\n" +
-                "SHFT+GRPH\tbreak\n\n" +
-                "n is 8 bit hex number\n" +
-                "r is register (a,bc,de,hl)\n");
+        System.err.println("""
+                        x[rr=nn]\tchange register
+                        d[nn]\t\tdump memory
+                        e[nn]\t\twrite memory
+                        l[nn]\t\tdisassemble
+                        g[nn]\t\tgo
+                        t[nn]\t\ttrace nn times (visible)
+                        u[nn]\t\ttrace nn times (invisible)
+                        p\t\tpassing trace
+                        RET\t\ttrace once
+                        b[nn]\t\tset/display break points
+                        ip\t\tinput from port p
+                        op,n\t\toutput n to port p
+                        r,filename,nn\tread file to address nn
+                        !\t\tshell command
+                        h/?\t\thelp
+                        q\t\tquit
+                        SHFT+GRPH\tbreak
+                        
+                        n is 8 bit hex number
+                        r is register (a,bc,de,hl)
+                        """);
     }
 
     /** */
     private void hexDump(int address, int length) {
 
         for (int y = 0; y < (length + 15) / 16; y++) {
-            System.out.print(StringUtil.toHex4(address + y * 16) + " ");
+            System.out.printf("%04x ", address + y * 16);
             for (int x = 0; x < 16; x++) {
                 if (address + y * 16 + x > 0xffff) {
                     break;
                 }
-                System.out.print(
-                    StringUtil.toHex2(bus.peekb(address + y * 16 + x)) + " ");
+                System.out.printf("%02x ", bus.peekb(address + y * 16 + x));
             }
             System.out.print("  ");
             for (int x = 0; x < 16; x++) {
@@ -111,8 +116,7 @@ public class Debugger implements Device {
                     break;
                 }
                 int c = bus.peekb(address + y * 16 + x);
-                System.out.print(
-                    !Character.isISOControl((char) c) ? (char) c : '.');
+                System.out.print(!Character.isISOControl((char) c) ? (char) c : '.');
             }
             System.out.println();
         }
@@ -121,11 +125,11 @@ public class Debugger implements Device {
     /** */
     private int list(int address) {
 
-        System.out.print(StringUtil.toHex4(address) + " ");
+        System.out.printf("%04x ", address);
         int movedAddress = disassembler.execute(address);
         for (int i = 0; i < 4; i++) {
             if (i < movedAddress - address) {
-                System.out.print(StringUtil.toHex2(bus.peekb(address + i)));
+                System.out.printf("%02x", bus.peekb(address + i));
             } else {
                 System.out.print("  ");
             }
@@ -158,7 +162,7 @@ public class Debugger implements Device {
         } else if (buf.startsWith("sp=")) {
             z80.setSP(Integer.parseInt(buf.substring(3), 16));
         } else {
-            System.err.println("unknown reg: " + buf);
+            logger.log(Level.DEBUG, "unknown reg: " + buf);
         }
 
         displayRegs();
@@ -191,7 +195,7 @@ public class Debugger implements Device {
         String filename = st.nextToken();
         int address = Integer.parseInt(st.nextToken(), 16);
 
-System.out.println("read file " + filename + " address " + StringUtil.toHex4(address) + "(" + address + ")");
+logger.log(Level.DEBUG, "read file " + filename + " address %04x".formatted(address) + "(" + address + ")");
 
         FileInputStream fp = new FileInputStream(filename);
 
@@ -200,12 +204,12 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
             if (c == -1) {
                 break;
             }
-//System.out.println("address " + StringUtil.toHex4(address) + "=" + StringUtil.toHex2(k));
+//logger.log(Level.DEBUG, "address %04x".formatted(address) + "=" + StringUtil.toHex2(k));
             bus.pokeb(p, c);
         }
 
         fp.close();
-//System.out.println("read file " + filename + " address " + StringUtil.toHex4(address) + ", " + (p - address) + " bytes");
+//logger.log(Level.DEBUG, "read file " + filename + " address %04x".formatted(address) + ", " + (p - address) + " bytes");
     }
 
     /** */
@@ -230,8 +234,7 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
 
         int data = bus.inp(port);
 
-        System.out.println("in " + StringUtil.toHex2(port) +
-                           " = " + StringUtil.toHex2(data));
+        System.out.printf("in %02x = %02x%n", port, data);
     }
 
     /** */
@@ -244,14 +247,12 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
             editedAddress = Integer.parseInt(buf.substring(1), 16);
         }
         while (true) {
-            System.out.print(
-                StringUtil.toHex4(editedAddress) + " " +
-                StringUtil.toHex2(bus.peekb(editedAddress)) + " = ");
+            System.out.printf("%04x %02x = ", editedAddress, bus.peekb(editedAddress));
             buf = reader.readLine();
             if (buf.charAt(0) == '.') {
                 break;
             }
-            if (buf.length() > 0) {
+            if (!buf.isEmpty()) {
                 bus.pokeb(editedAddress, Integer.parseInt(buf, 16));
             }
             editedAddress++;
@@ -282,11 +283,11 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
         currentAddress = z80.execute(currentAddress, 1);
 
         if (currentAddress == brakeAddress) {
-            System.err.println("break point");
+            logger.log(Level.DEBUG, "break point");
             return true;
         }
         if (z80.isUserBroken()) {
-            System.err.println("user break");
+            logger.log(Level.DEBUG, "user break");
             return true;
         }
         if (verbose) {
@@ -339,7 +340,7 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
      */
     public void execute() {
 
-        System.err.println("Z80 Debugger Copyright (c) 1993-2003 by vavi");
+        logger.log(Level.DEBUG, "Z80 Debugger Copyright (c) 1993-2003 by vavi");
 
         while (true) {
             try {
@@ -395,7 +396,7 @@ System.out.println("read file " + filename + " address " + StringUtil.toHex4(add
                     if (line.length() > 1) {
                         brakeAddress = Integer.parseInt(line.substring(1), 16);
                     }
-System.err.println("break point = " + StringUtil.toHex4(brakeAddress));
+logger.log(Level.DEBUG, "break point = %04x".formatted(brakeAddress));
                     break;
                 case 'r':
                     readFile(line);

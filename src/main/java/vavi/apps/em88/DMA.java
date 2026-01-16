@@ -6,8 +6,6 @@
 
 package vavi.apps.em88;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import vavi.util.Debug;
 import vavi.util.StringUtil;
 
@@ -49,11 +47,11 @@ class DMA implements Device {
     private int status;
 
     /** */
-    private final int[] addresses = new int[3];
+    private final int[] addresses = new int[4];
     /** */
-    private final int[] counts = new int[3];
+    private final int[] counts = new int[4];
     /** */
-    private final int[] modes = new int[3];
+    private final int[] modes = new int[4];
 
     private static final int MODE_VERIFY = 0;
     private static final int MODE_READ = 2;
@@ -96,9 +94,6 @@ class DMA implements Device {
     }
 
     /** */
-    private Timer[] timers = new Timer[4];
-
-    /** */
     public void setMode(int mode) {
         this.mode = mode;
 
@@ -106,13 +101,13 @@ class DMA implements Device {
             boolean enabled = (mode & (0x01 << i)) != 0;
 
             if (enabled) {
-//                  timers[i] = new Timer();
-//                  timers[i].schedule(new DmaTimerTask(i), 0, 333);
+                if (i == 2) { // CRTC
+                    for (int j = 0; j <= counts[i]; j++) {
+                        graphic.pokeb(j, bus.peekb(addresses[i] + j));
+                    }
+                    graphic.repaint();
+                }
 //logger.log(Level.TRACE, "channel " + i + " start: " + StringUtil.toHex4(addresses[i]) + ", " + StringUtil.toHex4(counts[i]));
-            } else if (timers[i] != null) {
-//                  timers[i].cancel();
-//                  timers[i] = null;
-//logger.log(Level.TRACE, "channel " + i + " stop");
             }
         }
     }
@@ -120,22 +115,5 @@ class DMA implements Device {
     /** */
     public int getStatus() {
         return status;
-    }
-
-    //----
-
-    /** */
-    private class DmaTimerTask extends TimerTask {
-        int channel;
-        DmaTimerTask(int channel) {
-            this.channel = channel;
-        }
-        public void run() {
-//logger.log(Level.TRACE, StringUtil.toHex4(addresses[channel]) + ", " + StringUtil.toHex4(counts[channel]));
-            for (int i = 0; i <= counts[channel]; i++) {
-                graphic.pokeb(i, bus.peekb(addresses[channel] + i));
-            }
-            graphic.repaint();
-        }
     }
 }

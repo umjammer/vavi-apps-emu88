@@ -91,6 +91,13 @@ final class Graphic implements Device {
     }
 
     /** */
+    public void setCursor(int c, int l) {
+        if (view != null) {
+            view.setCursor(c, l);
+        }
+    }
+
+    /** */
     private boolean _40;
 
     /** */
@@ -143,25 +150,10 @@ final class Graphic implements Device {
 // if (Character.isLetterOrDigit((char) data)) {
 //  System.err.print(Level.TRACE, "%4x ".formatted(data));
 // }
-        if (c > 80) {
-            int atr, len;
-            if ((c % 2) != 0) {
-                len = view.getTextVram(c - 1, l);
-                atr = data;
-            } else {
-                len = data;
-                atr = view.getTextVram(c + 1, l);
-            }
-
-//          int p = 0;
-//          for (int i = 0; i <= c / 2; i++) {
-//              p += tvram[l][c + i * 2];
-//          }
-//          for (int j = 0; j < len; j++) {
-//              xxx(l * 80 + ((p + j) % 80)) * 2, atr);
-//          }
-        } else {
+        // if (c >= 80) { // Attribute Area logic was broken/unused
             view.setTextVram(c, l, data);
-        }
+        // } else {
+        //    view.setTextVram(c, l, data);
+        // }
     }
 }

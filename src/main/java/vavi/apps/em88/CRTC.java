@@ -6,6 +6,9 @@
 
 package vavi.apps.em88;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import vavi.util.Debug;
 
 
@@ -16,6 +19,8 @@ import vavi.util.Debug;
  * @version 0.00 031230 nsano initial version <br>
  */
 class CRTC implements Device {
+
+    private static final Logger logger = System.getLogger(CRTC.class.getName());
 
     /** */
     private Graphic graphic;
@@ -45,6 +50,7 @@ class CRTC implements Device {
 
     /** */
     public void setCommand(int command) {
+        logger.log(Level.DEBUG, "CRTC: setCommand %02x".formatted( command));
         this.command = command;
 
         switch (command) {
@@ -63,8 +69,16 @@ class CRTC implements Device {
             break;
         case 0x70: // cursor on, set position
         case 0x71: // cursor off, set position
+        case 0x80: // cursor load (off?)
+        case 0x81: // cursor load (on?)
             pos = 0;
-            graphic.setCursorDisplaied((command - 0x70) != 0);
+            // For 0x80/0x81, Bit 0 determines "Load Cursor Position" flag?
+            // quasi88: crtc_load_cursor_position = data & 0x01; (where data is command byte?)
+            // If command is 0x80 -> 0. If 0x81 -> 1.
+            // If 0, it sets cursor to -1,-1 (Hidden).
+            // If 1, it reads parameters.
+            boolean visible = (command & 0x01) != 0;
+            graphic.setCursorDisplaied(visible);
             break;
         }
 
@@ -75,15 +89,13 @@ class CRTC implements Device {
      * @see "p-84"
      */
     public void setData(int data) {
-        switch (command) {
+        logger.log(Level.DEBUG, "CRTC: setData %02x (Command %02x)".formatted(data, command));
+        switch (command & 0xE0) { // Check top 3 bits for command group
         case 0x00: // initialize
             switch (sf) {
             case 0: // 1: screen format 1
                 boolean c_b = (data & 0x80) != 0;
                 int h = data & 0x7f;
-if (h + 2 > 80) {
- //logger.log(Level.DEBUG, "h > 80");
-}
                 sf = 1;
                 break;
             case 1: // 2: screen format 2
@@ -104,16 +116,50 @@ if (h + 2 > 80) {
                 break;
             }
             break;
-        case 0x70: // corsor on, set position
-        case 0x71: // corsor off, set position
-            if (pos == 0) {
-                curpos = data * 2;
-                pos = 1;
+        case 0x80: // cursor load
+            // quasi88:
+            // if (crtc_load_cursor_position) {
+            //    crtc_cursor[ crtc_param_num++ ] = data;
+            // } else {
+            //    crtc_cursor[ crtc_param_num++ ] = -1;
+            // }
+            // Note: crtc_param_num resets on setCommand.
+            
+            if ((command & 0x01) == 0) {
+                // Command 0x80: Clear/Hide Cursor?
+                // quasi88 says: if 0, set to -1.
+                // But it assumes we READ data.
+                // Does 0x80 accept data? Yes, param sequence.
+                graphic.setCursor(-1, -1);
+                pos++; // Consume param count
             } else {
-                curpos += data * 160;
-//        locate(curpos % 160, curpos / 160);
+                // Command 0x81: Set Cursor
+                if (pos == 0) {
+                    curpos = data; // X
+                    pos = 1;
+                } else {
+                    int x = curpos;
+                    int y = data; // Y
+                    graphic.setCursor(x, y);
+                    pos = 0; // Reset? or 2?
+                }
             }
             break;
+        case 0x60: // light pen (0x70 in my old code?)
+             // 0x60 >> 5 = 3 (CRTC_READ_LIGHT_PEN).
+             // Matches quasi88.
+             // Do nothing for now.
+             break;
+        }
+        
+        // Handle legacy 0x70/0x71 specific if needed, but 0x80 covers it.
+        if (command == 0x70 || command == 0x71) {
+             if (pos == 0) {
+                 curpos = data; 
+                 pos = 1;
+             } else {
+                 graphic.setCursor(curpos, data);
+             }
         }
     }
 
@@ -128,7 +174,8 @@ if (h + 2 > 80) {
     /** */
     public int getData() {
         int data = 0;
-        switch (command) {
+        
+        switch (command & 0xE0) { // Check Group
         case 0x00: // reset
             break;
         case 0x60: // light pen get position

@@ -43,6 +43,8 @@ public class PC88 {
 
         void repaint();
 
+        void setCursor(int c, int l);
+
         void setBackground(int c); // TODO
     }
 
@@ -87,6 +89,8 @@ public class PC88 {
     private CMT cmt = new CMT();
     /**  */
     private UIOP uiop = new UIOP();
+    /** Floppy Disk Controller */
+    private FDC fdc = new FDC();
 
     /**  */
     public Bus getBus() {
@@ -109,6 +113,7 @@ public class PC88 {
         mainBus.addDevice(usart);
         mainBus.addDevice(cmt);
         mainBus.addDevice(uiop);
+        mainBus.addDevice(fdc);
         mainBus.addDevice(z80);
 
         mainBus.reset();
@@ -319,7 +324,7 @@ public class PC88 {
                 } else {
 //                  if ((~romkill & 0xfe) != 0) { // TODO Is ROM1 the only special one?
 //                      address.base = null;
-//  //logger.log(Level.DEBUG, "4throm: " + rom4th + ", illegal access: " + StringUtil.toHex4(a));
+////logger.log(Level.DEBUG, "4throm: " + rom4th + ", illegal access: " + StringUtil.toHex4(a));
 //                  } else {
                     if (rmode == N) {
                         mapping.base = ROM_N;
@@ -382,10 +387,10 @@ public class PC88 {
                 }
             }
 
-//  if (direction == WRITE &&
-//      address.base == ROM_N88 && address.pointer < 0x8000) {
-//   //logger.log(Level.DEBUG, "ROM write: " + StringUtil.toHex4(address.pointer));
-//  }
+//if (direction == WRITE &&
+//    address.base == ROM_N88 && address.pointer < 0x8000) {
+////logger.log(Level.DEBUG, "ROM write: " + StringUtil.toHex4(address.pointer));
+//}
             return mapping;
         }
 
@@ -394,8 +399,13 @@ public class PC88 {
             Mapping mapping = getMapping(address, Direction.WRITE);
             mapping.base[mapping.pointer] = (byte) (value & 0xff);
 
+        if (address >= 0xF000) {
+                 // System.err.printf("VRAM Write? Addr: %04x Val: %02x (tvrams: %04x tvrame: %04x)\n", address, value, tvrams, tvrame);
+            }
+
             if (mapping.base == RAM_64K) {
                 if (address >= tvrams && address <= tvrame) {
+                    // System.err.printf("PC88: Valid VRAM Write! Addr: %04x Val: %02x\n", address, value);
                     graphic.pokeb(address - tvrams, value);
                     graphic.repaint();
                 }
@@ -404,10 +414,11 @@ public class PC88 {
 
         /** */
         public int inp(int port) {
+            port &= 0xff; // Mask to 8 bits to match real hardware behavior
             int data = 0;
 
             switch (port) {
-                case 0: // key board
+                case 0: // keyboard
                 case 1:
                 case 2:
                 case 3:
@@ -420,6 +431,9 @@ public class PC88 {
                 case 0x0a:
                 case 0x0b:
                     data = keyboard.getPort(port);
+                    if (data != 0xff) { // Only log if keys are pressed (active low)
+                         logger.log(Level.DEBUG, "PC88: Reading Key Port %x -> %02x".formatted(port, data));
+                    }
                     break;
                 case 0x20: // USART data port
                     data = usart.getData();
@@ -446,6 +460,7 @@ public class PC88 {
                     data = vram;
                     break;
                 case 0x68: // DMAC status port
+                    data = dma.getStatus();
                     break;
                 case 0x70: // TEXT WINDOW offset address
                     data = oar;
@@ -462,30 +477,35 @@ public class PC88 {
                 case 0xe9: // KANJI font H
                     break;
                 case 0xf4: // DMA 8 inch disk control
+                    data = fdc.getStatus();
                     break;
                 case 0xf6: // DMA 8 inch disk control
+                    data = fdc.getStatus();
                     break;
-                case 0xf7: // DMA 8 inch disk control
-                    break;
+
                 case 0xf8: // DMA 8 inch disk control
                     break;
-                case 0xfa: // DMA 8 inch disk control
+                case 0xfa: // FDC status
+                    data = fdc.getStatus();
                     break;
-                case 0xfb: // DMA 8 inch disk control
+                case 0xf7: // FDC data
+                case 0xfb: // FDC data
+                    data = fdc.read();
                     break;
                 case 0xfc: // mini disk control
-                    break;
                 case 0xfe: // mini disk control
+                    data = fdc.getStatus();
                     break;
             }
 
-////logger.log(Level.DEBUG, " pc: " + StringUtil.toHex4(z80.getPC()) + ": " + StringUtil.toHex2(port) + " <- " + StringUtil.toHex2(data) + ", " + inportNames.getProperty(StringUtil.toHex2(port)));
+//logger.log(Level.DEBUG, " pc: " + StringUtil.toHex4(z80.getPC()) + ": " + StringUtil.toHex2(port) + " <- " + StringUtil.toHex2(data) + ", " + inportNames.getProperty(StringUtil.toHex2(port)));
             return data;
         }
 
         /** */
         public void outp(int port, int data) {
-////logger.log(Level.DEBUG, "pc: " + StringUtil.toHex4(z80.getPC()) + ": " + StringUtil.toHex2(port) + " -> " + StringUtil.toHex2(data) + ", " + outportNames.getProperty(StringUtil.toHex2(port)));
+            port &= 0xff; // Mask to 8 bits to match real hardware behavior
+//logger.log(Level.DEBUG, "pc: " + StringUtil.toHex4(z80.getPC()) + ": " + StringUtil.toHex2(port) + " -> " + StringUtil.toHex2(data) + ", " + outportNames.getProperty(StringUtil.toHex2(port)));
             switch (port) {
                 case 0x10: //
                     break;
@@ -507,9 +527,9 @@ public class PC88 {
                     graphic.set200Line((data & 0x01) != 0);
                     graphic.setHColorMode((data & 0x10) != 0);
                     mmode = (data & 0x02) != 0 ? RAM : ROM;
-////logger.log(Level.DEBUG, "mmode: " + (mmode == ROM ? "ROM" : "RAM"));
+//logger.log(Level.DEBUG, "mmode: " + (mmode == ROM ? "ROM" : "RAM"));
                     rmode = (data & 0x04) != 0 ? N : N88;
-////logger.log(Level.DEBUG, "rmode: " + (rmode == N88 ? "N88" : "N"));
+//logger.log(Level.DEBUG, "rmode: " + (rmode == N88 ? "N88" : "N"));
                     graphic.setGraphicDisplayed((data & 0x08) != 0);
                     graphic.set25Line((data & 0x20) != 0);
                     break;
@@ -561,6 +581,7 @@ public class PC88 {
                     int channel = (port - 0x60) / 2;
                     dma.setAddress(channel, data);
                     tvrams = dma.getAddress(2);
+                    // System.err.printf("PC88: DMA Addr Set Ch%d Val:%02x -> tvrams:%04x\n", channel, data, tvrams);
                 }
                 break;
                 case 0x61: // CH-n DMA terminal count
@@ -570,6 +591,7 @@ public class PC88 {
                     int channel = (port - 0x61) / 2;
                     dma.setTerminalCount(channel, data);
                     tvrame = tvrams + dma.getTerminalCount(2);
+                    // System.err.printf("PC88: DMA Count Set Ch%d Val:%02x -> tvrame:%04x\n", channel, data, tvrame);
                 }
                 break;
                 case 0x68: // DMAC control port
@@ -612,14 +634,15 @@ public class PC88 {
                     break;
                 case 0xf5: // DMA 8 inch disk control
                     break;
-                case 0xf7: // DMA 8 inch disk control
-                    break;
+
                 case 0xf8: // DMA 8 inch disk control
                     break;
                 case 0xf9: // DMA 8 inch disk control
                     break;
-                case 0xfb: // DMA 8 inch disk control
-                    break;
+                case 0xf7: // FDC data
+        case 0xfb: // DMA 8 inch disk control
+            fdc.write(data);
+            break;
                 case 0xfd: // mini disk control
                     break;
                 case 0xff: // mini disk control

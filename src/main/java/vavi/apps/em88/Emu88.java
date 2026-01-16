@@ -13,18 +13,21 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -48,6 +51,8 @@ import vavi.util.StringUtil;
  */
 @Options
 class Emu88 {
+
+    private static final Logger logger = System.getLogger(Emu88.class.getName());
 
     @Option(option = "d", argName = "debug mode")
     boolean debugMode;
@@ -74,8 +79,9 @@ class Emu88 {
         DebugPanel debugPanel = new DebugPanel(pc88.getCpu());
         JDialog dialog = new JDialog();
         dialog.getContentPane().add(debugPanel);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialog.setTitle("Emu88");
+        // Debug Dialog configuration
+        dialog.setFocusableWindowState(false); // Prevent stealing focus
+        dialog.setTitle("Emu88 Debug");
         dialog.setLocation(650, 0);
         dialog.pack();
         dialog.setVisible(true);
@@ -83,8 +89,15 @@ class Emu88 {
         //
         JButton button = new JButton();
         button.setAction(new AbstractAction("Break") {
+            ExecutorService es = Executors.newSingleThreadExecutor();
             public void actionPerformed(ActionEvent ev) {
-                pc88.getCpu().setUserBroken(true);
+                if (getValue(Action.NAME).equals("Break")) {
+                    pc88.getCpu().setUserBroken(true);
+                    putValue(Action.NAME, "Start");
+                } else if (getValue(Action.NAME).equals("Start")) {
+                    es.execute(() -> pc88.getCpu().execute(pc88.getCpu().getPC(), 0));
+                    putValue(Action.NAME, "Break");
+                }
             }
         });
         button.setPreferredSize(new Dimension(60, 20));
@@ -96,10 +109,10 @@ class Emu88 {
         controller.pack();
         controller.setVisible(true);
 
-        System.err.println("PC-8801 emulator Copyright (c) 1993-2003 by vavi");
+        logger.log(Level.DEBUG, "PC-8801 emulator Copyright (c) 1993-2003 by vavi");
 
         SwingView view = new SwingView();
-        view.mainWindowActivated = dialog::toFront;
+        // view.mainWindowActivated = dialog::toFront; // Disable auto-to-front to avoid focus issues
         pc88.setView(view);
         pc88.setRomDao(new MyRomDao());
         pc88.reset();
@@ -133,6 +146,15 @@ class Emu88 {
             return tvram[l][c];
         }
 
+        /** Cursor Position */
+        private int cursorX = -1, cursorY = -1;
+
+        public void setCursor(int c, int l) {
+            logger.log(Level.DEBUG, "SwingView: setCursor(%d, %d)".formatted(c, l));
+            this.cursorX = c;
+            this.cursorY = l;
+        }
+
         /** */
         private int W = 8;
         /** */
@@ -162,15 +184,15 @@ class Emu88 {
                     }
                 }
             } catch (NullPointerException e) {
-//logger.log(Level.TRACE, "set font correctly: " + path);
+logger.log(Level.ERROR, "set font correctly: " + path);
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
         }
 
+        /** */
         Runnable mainWindowActivated;
 
-        /** TODO */
         public void reset() {
             screen = new JPanel() {
                 public void paint(Graphics g) {
@@ -187,23 +209,164 @@ class Emu88 {
             frame.getContentPane().add(screen);
 
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.addWindowListener(new WindowAdapter() {
-                @Override public void windowActivated(WindowEvent e) {
-                    mainWindowActivated.run();
-                }
-            });
-            frame.setTitle("Emu88");
+            // frame.addWindowListener(new WindowAdapter() {
+            //     @Override public void windowActivated(WindowEvent e) {
+            //         if (mainWindowActivated != null) mainWindowActivated.run();
+            //     }
+            // });
+            frame.setTitle("Emu88 Main"); // Rename Main Window
             frame.pack();
             frame.setVisible(true);
+            frame.requestFocus(); // Request focus for Main Window
+
+            new javax.swing.Timer(33, e -> {
+                screen.repaint();
+            }).start();
         }
 
         /** */
         private void drawText(Graphics g) {
+            // Blink Counter
+            long blink = (System.currentTimeMillis() / 500) % 2; // 0 or 1
+
             for (int l = 0; l < 25; l++) {
+                // Parse Attributes for this line (20 pairs at offset 80)
+                int attrPtr = 80;
+                int[] attrEvents = new int[81]; // 0..80.
+                
+                for (int i=0; i<81; i++) attrEvents[i] = 0; 
+                
+                int attrRest = 0; // "Rest" attribute (Right Side)
+
+                // Decode Attributes from VRAM pairs
+                for (int i = 0; i < 20; i++) {
+                    int col = tvram[l][attrPtr + i*2] & 0xff;
+                    int atr = tvram[l][attrPtr + i*2 + 1] & 0xff;
+                    
+                    int encodedAttr = atr | 0x100; // Mark as present
+
+                    if (col < 80) { // Valid Column 0-79
+                        if (attrEvents[col] == 0) { // If Empty, set it
+                            attrEvents[col] = encodedAttr;
+                        }
+                    } else if (col == 0x80) { // End Marker
+                        if (attrRest == 0) {
+                            attrRest = encodedAttr;
+                        }
+                    }
+                }
+                
+                // Attribute Swap Logic (Right-to-Left Propagation)
+                // If there is a "Rest" attribute at the end, it applies to everything 
+                // from the previous attribute marker up to the end.
+                // quasi88 logic:
+                // If attrEvents[0] is empty, it means the FIRST segment hasn't been defined.
+                // But in "Valid Until", the attribute at Col X applies to 0...X.
+                // So we need to propagate RIGHT TO LEFT.
+                
+                // If we have an End Marker (attrRest), we use it to fill gaps from Right.
+                int currentFill = attrRest;
+                for (int c = 80; c >= 0; c--) {
+                    if (attrEvents[c] != 0) {
+                        // Found a marker.
+                        // The marker at 'c' is valid for 0...c.
+                        // But wait, "Valid Until" means Attr at C applies to pixels < C.
+                        // So the region C...NextMarker gets "NextMarker's Attr". No.
+                        // "Valid Until C" means: From PreviousMarker to C, use THIS Attr.
+                        
+                        // quasi88:
+                        // for (j=80; j>0; j--) {
+                        //   if (text_attr[j]) {
+                        //     tmp = text_attr[j];
+                        //     text_attr[j] = attr_rest;
+                        //     attr_rest = tmp;
+                        //   }
+                        // }
+                        // text_attr[0] = attr_rest;
+                        
+                        // Let's implement EXACTLY this swap logic.
+                        // It essentially shifts attributes to the RIGHT (Start of Next Segment).
+                        int tmp = attrEvents[c];
+                        attrEvents[c] = currentFill;
+                        currentFill = tmp;
+                    }
+                }
+                // Finally, set Column 0 to the remaining attribute (which applies to start)
+                attrEvents[0] = currentFill;
+
+                // Scan Line
+                int activeAttr = 0xE0; // Default White
+                
+                // State variables
+                boolean activeReverse = false;
+                boolean activeBlink = false;
+                boolean activeSecret = false;
+                int activeColor = 7; // White
+
                 for (int c = 0; c < 80; c++) {
-                    Image image = textCharacters[tvram[l][c]];
-                    g.drawImage(image, c * W, l * H, null);
-//if (Character.isLetterOrDigit((char) tvram[l][c])) //logger.log(Level.TRACE, (char) tvram[l][c]);
+                    // Update Attribute State
+                    if (attrEvents[c] != 0) {
+                        int attrByte = attrEvents[c] & 0xff; // Strip 0x100
+                        boolean switchBit = (attrByte & 0x08) != 0;
+                        if (switchBit) {
+                            // Color Change
+                            int b = (attrByte & 0x20) >> 5;
+                            int r = (attrByte & 0x40) >> 6;
+                            int g_ = (attrByte & 0x80) >> 7;
+                            activeColor = (g_ << 2) | (r << 1) | b;
+                        } else {
+                            // Attribute Change
+                            activeReverse = (attrByte & 0x04) != 0;
+                            activeBlink   = (attrByte & 0x02) != 0;
+                            activeSecret  = (attrByte & 0x01) != 0;
+                        }
+                    }
+
+                    int charCode = tvram[l][c] & 0xff;
+                    
+                    // Apply current state
+                    boolean reverse = activeReverse;
+                    boolean blinkOn = activeBlink;
+                    boolean secret  = activeSecret;
+                    int colorVal    = activeColor;
+
+                    if (secret || (blinkOn && blink == 0)) {
+                        charCode = 0; // Space
+                    }
+
+                    Color fg = colors[colorVal];
+                    Color bg = Color.black;
+
+                    // Cursor Overlay (Blink Block)
+                    if (cursorX != -1 && l == cursorY && c == cursorX) {
+                        if (blink == 1) { 
+                             reverse = !reverse;
+                        }
+                        // Force Debug Log once
+                        if (c == 0 && l == 0 && blink == 1) { /* logger.log(Level.DEBUG, "Cursor Blink On"); */ }
+                    }
+
+                    if (reverse) {
+                        Color tmp = fg;
+                        fg = bg;
+                        bg = tmp;
+                    }
+
+                    // Background Draw
+                    if (!bg.equals(Color.black)) { 
+                        g.setColor(bg);
+                        g.fillRect(c * W, l * H, W, H);
+                    }
+
+                    if (charCode != 0 && charCode != 32) {
+                        if (reverse) {
+                             g.setXORMode(Color.black);
+                             g.drawImage(textCharacters[charCode], c * W, l * H, null);
+                             g.setPaintMode();
+                        } else {
+                             g.drawImage(textCharacters[charCode], c * W, l * H, null);
+                        }
+                    }
                 }
             }
         }
@@ -233,7 +396,7 @@ class Emu88 {
     }
 
     static class MyRomDao implements RomDao {
-        static final Map<String, String> roms = new HashMap<String, String>() {{
+        static final Map<String, String> roms = new HashMap<>() {{
             put("N88", "classpath:roms/romn88.bin");
             put("N80", "classpath:roms/romn.bin");
             put("4TH", "classpath:roms/rom4th.bin");

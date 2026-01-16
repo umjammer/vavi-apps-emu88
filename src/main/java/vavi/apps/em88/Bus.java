@@ -59,6 +59,9 @@ public abstract class Bus {
 
     /** @param value unsigned byte */
     public void pokeb(int address, int value) {
+        if (address == 0xEF54) {
+             System.err.printf("Writing to EF54: %02x\n", value);
+        }
         Mapping mapping = getMapping(address, Direction.WRITE);
         mapping.base[mapping.pointer] = (byte) (value & 0xff);
 //logger.log(Level.TRACE, StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d));
