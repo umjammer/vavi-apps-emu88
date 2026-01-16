@@ -46,5 +46,3 @@ class CMT implements Device {
         this.mton = mton;
     }
 }
-
-/* */

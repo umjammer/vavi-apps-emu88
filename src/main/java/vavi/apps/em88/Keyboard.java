@@ -15,15 +15,15 @@ import vavi.util.Debug;
 
 
 /**
- * PC-8801 のキーボードをエミュレーションします．
+ * Emulates a PC-8801 keyboard.
  *
- * TODO 三つ押されたら四つ目が反応する件
+ * TODO When three buttons are pressed, the fourth button responds.
  * <pre>
  *
  *  -X--X-
  *   |  |
  *  -O--X-
- *   ↑ ここ
+ *   ↑ here
  * </pre>
  *
  * @author <a href=mailto:umjammer@gmail.com>Naohide Sano</a> (nsano)
@@ -37,8 +37,12 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
     private Bus bus;
 
     /** */
+    private INTC intc;
+
+    /** */
     public void setBus(Bus bus) {
         this.bus = bus;
+        this.intc = (INTC) bus.getDevice(INTC.class.getName());
     }
 
     //----
@@ -46,12 +50,12 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
     /** key port 0x00 ~ 0x0b */
     private int[] keyPort = new int[12];
 
-    /** 指定したポートの値を取得します． */
+    /** Gets the value of the specified port. */
     public int getPort(int port) {
         return keyPort[port];
     }
 
-    /** */ {
+    /* */ {
         for (int i = 0; i < 12; i++) {
             keyPort[i] = 0xff;
         }
@@ -175,6 +179,7 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
 
     /** */
     public void keyPressed(KeyEvent ev) {
+        // logger.log(Level.DEBUG, "Keyboard.keyPressed: " + ev.getKeyCode());
         switch (ev.getKeyCode()) {
         // 00
         case KeyEvent.VK_NUMPAD0:
@@ -219,9 +224,25 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
             break;
 //      case KeyEvent.: keyPort[1] &= ~RK_NUMPAD_COMMA; break;
 //      case KeyEvent.: keyPort[1] &= ~RK_NUMPAD_PERIOD; break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[1] &= ~RK_ENTER;
+//            break;
+//        case KeyEvent.VK_ENTER:
+//            logger.log(Level.DEBUG, "Hack: Mapping Enter to 'A'");
+//            keyPort[2] &= ~RK_A;
+//            break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[1] &= ~RK_ENTER;
+//            break;
         case KeyEvent.VK_ENTER:
             keyPort[1] &= ~RK_ENTER;
             break;
+//        case KeyEvent.VK_ENTER:
+//            // Simulate Ctrl + M (ASCII CR)
+//            logger.log(Level.DEBUG, "Hack: Mapping Enter to 'Ctrl + M'");
+//            keyPort[3] &= ~RK_M;
+//            keyPort[8] &= ~RK_CONTROL;
+//            break;
         // 02
         case KeyEvent.VK_AT:
             keyPort[2] &= ~RK_AT;
@@ -438,8 +459,8 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
         case KeyEvent.VK_F12:
             keyPort[10] &= ~RK_COPY;
             break;
-        // case KeyEvent.: keyPort[10] &= ~RK_NUMPAD_MINUS; break;
-        // case KeyEvent.: keyPort[10] &= ~RK_NUMPAD_SLASH; break;
+//         case KeyEvent.: keyPort[10] &= ~RK_NUMPAD_MINUS; break;
+//         case KeyEvent.: keyPort[10] &= ~RK_NUMPAD_SLASH; break;
         case KeyEvent.VK_CAPS_LOCK:
             keyPort[10] &= ~RK_CAPS_LOCK;
             break;
@@ -454,8 +475,9 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
     }
 
     /** */
+    /** */
     public void keyReleased(KeyEvent ev) {
-        // Debug.println(ev.getKeyCode());
+        //logger.log(Level.TRACE, ev.getKeyCode());
         switch (ev.getKeyCode()) {
         // 00
         case KeyEvent.VK_NUMPAD0:
@@ -500,9 +522,19 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
             break;
         // case KeyEvent.: keyPort[1] |= RK_NUMPAD_COMMA; break;
         // case KeyEvent.: keyPort[1] |= RK_NUMPAD_PERIOD; break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[1] |= RK_ENTER;
+//            break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[1] |= RK_ENTER;
+//            break;
         case KeyEvent.VK_ENTER:
             keyPort[1] |= RK_ENTER;
             break;
+//        case KeyEvent.VK_ENTER:
+//            keyPort[3] |= RK_M;
+//            keyPort[8] |= RK_CONTROL;
+//            break;
         // 02
         case KeyEvent.VK_AT:
             keyPort[2] |= RK_AT;
@@ -733,10 +765,8 @@ public final class Keyboard extends KeyAdapter implements Device, Controller {
             break;
         //
         case KeyEvent.VK_PAUSE:
-            Debug.println("reset");
+            //logger.log(Level.DEBUG, "reset");
             break;
         }
     }
 }
-
-/* */

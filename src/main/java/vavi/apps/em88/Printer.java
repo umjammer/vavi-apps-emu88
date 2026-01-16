@@ -33,5 +33,3 @@ class Printer implements Device {
     public void setPSTB(boolean pstb) {
     }
 }
-
-/* */

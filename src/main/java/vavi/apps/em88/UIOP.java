@@ -6,6 +6,7 @@
 
 package vavi.apps.em88;
 
+
 /**
  * UIOP.
  *
@@ -50,5 +51,3 @@ class UIOP implements Device {
         this.port2 = port2;
     }
 }
-
-/* */

@@ -9,6 +9,8 @@ package vavi.apps.em88;
 import java.util.HashMap;
 import java.util.Map;
 
+import static vavi.apps.em88.Z80.inc16bitInternal;
+
 
 /**
  * Bus.
@@ -21,59 +23,73 @@ import java.util.Map;
  */
 public abstract class Bus {
 
-    /** ある状況で実際どのメモリにマッピングされているかを現すクラスです。 */
-    public final class Mapping {
+    /** A class that represents what memory is actually mapped in a given situation. */
+    public static final class Mapping {
         /** */
         public byte[] base;
         /** */
         public int pointer;
     }
 
-    /** メモリの読み書きの方向を表す列挙です。 */
+    /** An enumeration that describes the direction of memory reads and writes. */
     public enum Direction {
         READ,
         WRITE
     }
 
     /**
-     * @param address 16bit のアドレス
-     * @param direction {@link Direction} で {@link Mapping} が変わる場合がある
+     * @param address 16bit address
+     * @param direction {@link Direction} may change {@link Mapping}
      */
     protected abstract Mapping getMapping(int address, Direction direction);
 
-    /** */
+    /** @return unsigned byte */
     public final int peekb(int address) {
         Mapping mapping = getMapping(address, Direction.READ);
         return mapping.base[mapping.pointer] & 0xff;
     }
 
-    /** */
+    /** @return unsigned short */
     public final int peekw(int address) {
         int l = peekb(address);
-        int h = peekb(address + 1);
+        int h = peekb(inc16bitInternal(address));
 
         return (h << 8) | l;
     }
 
-    /** */
+    /** @param value unsigned byte */
     public void pokeb(int address, int value) {
+        if (address == 0xEF54) {
+             System.err.printf("Writing to EF54: %02x\n", value);
+        }
         Mapping mapping = getMapping(address, Direction.WRITE);
         mapping.base[mapping.pointer] = (byte) (value & 0xff);
-// Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d));
+//logger.log(Level.TRACE, StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d));
     }
 
     /** */
     public final void pokew(int address, int value) {
         pokeb(address, value);
-        pokeb(address + 1, value >> 8);
-// Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
+        pokeb(inc16bitInternal(address), value >> 8);
+//logger.log(Level.TRACE, StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
     }
 
     /** */
     public final void pokew(int address, int h, int l) {
         pokeb(address, h);
-        pokeb(address + 1, l);
-// Debug.println(StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
+        pokeb(inc16bitInternal(address), l);
+//logger.log(Level.TRACE, StringUtil.toHex4(a) + ": " + StringUtil.toHex2(d >> 8) + StringUtil.toHex2(d & 0xff));
+    }
+
+    /** */
+    public void pokes(int address, byte[] b, int ofs, int len) {
+        Mapping mapping = getMapping(address, Direction.WRITE);
+        System.arraycopy(b, ofs, mapping.base, mapping.pointer, len);
+    }
+
+    /** */
+    public void pokes(int address, byte[] b) {
+        pokes(address, b, 0, b.length);
     }
 
     /** */
@@ -104,5 +120,3 @@ public abstract class Bus {
         }
     }
 }
-
-/* */

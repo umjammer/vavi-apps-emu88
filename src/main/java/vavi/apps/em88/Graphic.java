@@ -91,12 +91,19 @@ final class Graphic implements Device {
     }
 
     /** */
+    public void setCursor(int c, int l) {
+        if (view != null) {
+            view.setCursor(c, l);
+        }
+    }
+
+    /** */
     private boolean _40;
 
     /** */
     public void set40(boolean _40) {
         this._40 = _40;
-// Debug.println(_40);
+//logger.log(Level.TRACE, _40);
         view.set40(_40);
     }
 
@@ -106,7 +113,7 @@ final class Graphic implements Device {
     /** */
     public void set25Line(boolean _25Line) {
         this._25Line = _25Line;
-// Debug.println(_25Line);
+//logger.log(Level.TRACE, _25Line);
         view.set25Line(_25Line);
     }
 
@@ -132,38 +139,21 @@ final class Graphic implements Device {
     }
 
     /** */
-    public final void pokeb(int offset, int data) {
+    public void pokeb(int offset, int data) {
 
         int c = offset % 120;
         int l = offset / 120;
 
 // if (Character.isLetterOrDigit((char) data)) {
-//  Debug.println((char) data + ": " + c + ", " + l);
+//  logger.log(Level.TRACE, (char) data + ": " + c + ", " + l);
 // }
 // if (Character.isLetterOrDigit((char) data)) {
-//  System.err.print(StringUtil.toHex4(data) + " ");
+//  System.err.print(Level.TRACE, "%4x ".formatted(data));
 // }
-        if (c > 80) {
-            int atr, len;
-            if ((c % 2) != 0) {
-                len = view.getTextVram(c - 1, l);
-                atr = data;
-            } else {
-                len = data;
-                atr = view.getTextVram(c + 1, l);
-            }
-
-//          int p = 0;
-//          for (int i = 0; i <= c / 2; i++) {
-//              p += tvram[l][c + i * 2];
-//          }
-//          for (int j = 0; j < len; j++) {
-//              xxx(l * 80 + ((p + j) % 80)) * 2, atr);
-//          }
-        } else {
+        // if (c >= 80) { // Attribute Area logic was broken/unused
             view.setTextVram(c, l, data);
-        }
+        // } else {
+        //    view.setTextVram(c, l, data);
+        // }
     }
 }
-
-/* */
