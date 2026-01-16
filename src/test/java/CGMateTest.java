@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /**
@@ -23,6 +24,7 @@ public class CGMateTest {
     private static final int PLANE_SIZE = STRIDE * HEIGHT; // 16,000 bytes
 
     @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test1() throws Exception {
         Path p = Paths.get(System.getProperty("user.home"), "Google Drive/My Drive/Private/Computer/games/nsano/nsano/HOME/TMP/img/PIC/BALL.PIC");
 
