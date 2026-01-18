@@ -6,13 +6,17 @@
 
 package vavi.apps.em88;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.image.RGBImageFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
@@ -136,6 +140,9 @@ class Emu88 {
         /** */
         private int[][] tvram = new int[26][120];
 
+        // Scratch buffer for text composition
+        private BufferedImage textScratch = new BufferedImage(16, 20, BufferedImage.TYPE_INT_ARGB);
+
         /* */
         public void setTextVram(int c, int l, int value) {
             tvram[l][c] = value;
@@ -144,6 +151,64 @@ class Emu88 {
         /* */
         public int getTextVram(int c, int l) {
             return tvram[l][c];
+        }
+
+        private byte[] vramR;
+        private byte[] vramG;
+        private byte[] vramB;
+        private BufferedImage graphicsImage = new BufferedImage(640, 400, BufferedImage.TYPE_INT_RGB);
+        private int[] graphicsPixels = ((java.awt.image.DataBufferInt) graphicsImage.getRaster().getDataBuffer()).getData();
+
+        /** B:1, R:2, G:4 */
+        private static final int[] PALETTE = {
+            0xFF000000, 0xFF0000FF, 0xFFFF0000, 0xFFFF00FF,
+            0xFF00FF00, 0xFF00FFFF, 0xFFFFFF00, 0xFFFFFFFF
+        };
+
+        public void setGraphicsVram(byte[] r, byte[] g, byte[] b) {
+            this.vramR = r;
+            this.vramG = g;
+            this.vramB = b;
+        }
+
+        private void drawGraphics(Graphics g) {
+            if (vramR == null || vramG == null || vramB == null) return;
+
+            // 640x200 VRAM -> 640x400 Image
+            int width = 640;
+            int height = 200;
+            int stride = 80; // bytes per line
+
+            for (int y = 0; y < height; y++) {
+                int lineOffset = y * stride;
+                for (int x = 0; x < stride; x++) {
+                     int offset = lineOffset + x;
+                     int b = vramB[offset] & 0xff;
+                     int r = vramR[offset] & 0xff;
+                     int g_ = vramG[offset] & 0xff;
+
+                     for (int bit = 0; bit < 8; bit++) {
+                         // Pixels are MSB first (0x80 is left-most pixel in byte)
+                         int mask = 0x80 >> bit;
+                         int colorIndex = 0;
+                         if ((b & mask) != 0) colorIndex |= 1;
+                         if ((r & mask) != 0) colorIndex |= 2;
+                         if ((g_ & mask) != 0) colorIndex |= 4;
+
+                         int pixelColor = PALETTE[colorIndex];
+                         
+                         int px = x * 8 + bit;
+                         // Double Scanline
+                         int py1 = y * 2;
+                         int py2 = y * 2 + 1;
+                         
+                         graphicsPixels[py1 * width + px] = pixelColor;
+                         graphicsPixels[py2 * width + px] = pixelColor;
+                     }
+                }
+            }
+            
+            g.drawImage(graphicsImage, 0, 0, null);
         }
 
         /** Cursor Position */
@@ -180,7 +245,15 @@ class Emu88 {
                     for (int j = 0; j < 16; j++) {
                         ImageFilter cif = new CropImageFilter(j * 8, i * 16, 8, 16);
                         FilteredImageSource fis = new FilteredImageSource(image.getSource(), cif);
-                        textCharacters[i * 16 + j] = t.createImage(fis);
+                        // Make Black Transparent
+                        ImageFilter tif = new RGBImageFilter() {
+                            public int filterRGB(int x, int y, int rgb) {
+                                if ((rgb & 0x00FFFFFF) == 0) return 0;
+                                return rgb;
+                            }
+                        };
+                        FilteredImageSource fis2 = new FilteredImageSource(fis, tif);
+                        textCharacters[i * 16 + j] = t.createImage(fis2);
                     }
                 }
             } catch (NullPointerException e) {
@@ -197,6 +270,7 @@ logger.log(Level.ERROR, "set font correctly: " + path);
             screen = new JPanel() {
                 public void paint(Graphics g) {
                     super.paint(g);
+                    drawGraphics(g);
                     drawText(g);
                 }
             };
@@ -257,46 +331,17 @@ logger.log(Level.ERROR, "set font correctly: " + path);
                 }
                 
                 // Attribute Swap Logic (Right-to-Left Propagation)
-                // If there is a "Rest" attribute at the end, it applies to everything 
-                // from the previous attribute marker up to the end.
-                // quasi88 logic:
-                // If attrEvents[0] is empty, it means the FIRST segment hasn't been defined.
-                // But in "Valid Until", the attribute at Col X applies to 0...X.
-                // So we need to propagate RIGHT TO LEFT.
-                
-                // If we have an End Marker (attrRest), we use it to fill gaps from Right.
                 int currentFill = attrRest;
                 for (int c = 80; c >= 0; c--) {
                     if (attrEvents[c] != 0) {
-                        // Found a marker.
-                        // The marker at 'c' is valid for 0...c.
-                        // But wait, "Valid Until" means Attr at C applies to pixels < C.
-                        // So the region C...NextMarker gets "NextMarker's Attr". No.
-                        // "Valid Until C" means: From PreviousMarker to C, use THIS Attr.
-                        
-                        // quasi88:
-                        // for (j=80; j>0; j--) {
-                        //   if (text_attr[j]) {
-                        //     tmp = text_attr[j];
-                        //     text_attr[j] = attr_rest;
-                        //     attr_rest = tmp;
-                        //   }
-                        // }
-                        // text_attr[0] = attr_rest;
-                        
-                        // Let's implement EXACTLY this swap logic.
-                        // It essentially shifts attributes to the RIGHT (Start of Next Segment).
                         int tmp = attrEvents[c];
                         attrEvents[c] = currentFill;
                         currentFill = tmp;
                     }
                 }
-                // Finally, set Column 0 to the remaining attribute (which applies to start)
                 attrEvents[0] = currentFill;
 
                 // Scan Line
-                int activeAttr = 0xE0; // Default White
-                
                 // State variables
                 boolean activeReverse = false;
                 boolean activeBlink = false;
@@ -342,8 +387,6 @@ logger.log(Level.ERROR, "set font correctly: " + path);
                         if (blink == 1) { 
                              reverse = !reverse;
                         }
-                        // Force Debug Log once
-                        if (c == 0 && l == 0 && blink == 1) { /* logger.log(Level.DEBUG, "Cursor Blink On"); */ }
                     }
 
                     if (reverse) {
@@ -352,19 +395,52 @@ logger.log(Level.ERROR, "set font correctly: " + path);
                         bg = tmp;
                     }
 
-                    // Background Draw
-                    if (!bg.equals(Color.black)) { 
-                        g.setColor(bg);
-                        g.fillRect(c * W, l * H, W, H);
-                    }
+                    // Drawing Logic
+                    int x = c * W;
+                    int y = l * H;
 
-                    if (charCode != 0 && charCode != 32) {
-                        if (reverse) {
-                             g.setXORMode(Color.black);
-                             g.drawImage(textCharacters[charCode], c * W, l * H, null);
-                             g.setPaintMode();
-                        } else {
-                             g.drawImage(textCharacters[charCode], c * W, l * H, null);
+                    if (reverse) {
+                        // Reverse: bg is the Block Color. Text is Hole (Transparent).
+                        Graphics2D sg = textScratch.createGraphics();
+                        sg.setComposite(AlphaComposite.Clear);
+                        sg.fillRect(0, 0, W, H); 
+                        
+                        sg.setComposite(AlphaComposite.Src);
+                        sg.setColor(bg); 
+                        sg.fillRect(0, 0, W, H);
+                        
+                        if (charCode != 0 && charCode != 32) {
+                             sg.setComposite(AlphaComposite.DstOut); // Punch Hole
+                             sg.drawImage(textCharacters[charCode], 0, 0, W, H, null); 
+                        }
+                        sg.dispose();
+                        g.drawImage(textScratch, x, y, null);
+                    
+                    } else {
+                        // Normal: bg is Back Color (usually Black/Transparent).
+                        if (!bg.equals(Color.black)) {
+                            g.setColor(bg);
+                            g.fillRect(x, y, W, H);
+                        }
+                        
+                        if (charCode != 0 && charCode != 32) {
+                             if (fg.equals(Color.white)) {
+                                 g.drawImage(textCharacters[charCode], x, y, W, H, null);
+                             } else {
+                                // Tint Text
+                                Graphics2D sg = textScratch.createGraphics();
+                                sg.setComposite(AlphaComposite.Clear);
+                                sg.fillRect(0, 0, W, H);
+                                
+                                sg.setComposite(AlphaComposite.Src);
+                                sg.setColor(fg);
+                                sg.fillRect(0, 0, W, H);
+                                
+                                sg.setComposite(AlphaComposite.DstIn); // Tint
+                                sg.drawImage(textCharacters[charCode], 0, 0, W, H, null);
+                                sg.dispose();
+                                g.drawImage(textScratch, x, y, null);
+                             }
                         }
                     }
                 }
