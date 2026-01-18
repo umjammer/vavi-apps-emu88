@@ -46,12 +46,15 @@ public class PC88 {
         void setCursor(int c, int l);
 
         void setBackground(int c); // TODO
+
+        void setGraphicsVram(byte[] vramR, byte[] vramG, byte[] vramB);
     }
 
     private View view;
 
     public void setView(View view) {
         this.view = view;
+        view.setGraphicsVram(VRAM_R, VRAM_G, VRAM_B);
     }
 
     public interface Controller {
