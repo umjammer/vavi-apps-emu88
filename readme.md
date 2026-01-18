@@ -1,11 +1,15 @@
 [![Release](https://jitpack.io/v/umjammer/vavi-apps-emu88.svg)](https://jitpack.io/#umjammer/vavi-apps-emu88)
 [![Java CI](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/maven.yml)
-[![CodeQL](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/codeql-analysys.yml/badge.svg)](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/codeql-analysis.yml)
+[![CodeQL](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/umjammer/vavi-apps-emu88/actions/workflows/codeql-analysis.yml)
 ![Java](https://img.shields.io/badge/Java-17-b07219)
 
 # vavi-apps-emu88
 
+<img alt="screen" src="src/test/resources/pc88_screen.png" width="400" />
+
+<!--
 <img alt="logo" src="src/test/resources/logo.png" width="200" />&nbsp;&nbsp;<sub><a href="https://www.nec.com/">© NEC</a></sub>
+-->
 
 PC-8801mkII emulator．
 
